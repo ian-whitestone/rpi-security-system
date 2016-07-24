@@ -52,10 +52,10 @@ def measure_distance():
 
 t1 = time.time()
 t2=0
-while (t2-t1)<5:
+while (t2-t1)<50:
     measure_distance()
     t2=time.time()
-
+    time.sleep(10)
 
 # Reset GPIO settings
 GPIO.cleanup()
