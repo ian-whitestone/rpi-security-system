@@ -18,7 +18,7 @@ def send_text(message,media):
                               body=message)#, media_url=media)
     return
 
-send_text('hello world','str')
+#send_text('hello world','str')
 
 ##use git python to push images to git repo
 ###https://github.com/gitpython-developers/GitPython
