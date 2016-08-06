@@ -26,8 +26,12 @@ while True:
             cam.snap_x(3,count)
             count+=1
             time.sleep(5)
-        else:
+        elif i=0:
             i+=1
             time.sleep(3)
-
+        elif count>3:
+            subprocess.check_output(['./codesend','4478268 -p 0']) #turn off living room light
+            #send another text??
+            time.sleep(3600) #wait an hour??
+            #break #or kill the program??
 
