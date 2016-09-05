@@ -1,0 +1,5 @@
+
+raspivid -fps 30 -hf -t 990000 -w 640 -h 480 -o sec_cam.h264
+
+MP4Box -fps 30 -add sec_cam.h264 sec_cam.mp4
+

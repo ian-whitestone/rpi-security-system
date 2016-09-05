@@ -1,8 +1,10 @@
 # we import the Twilio client from the dependency we just installed
 from twilio.rest import TwilioRestClient
+import os
 
 
-f=open('../twilio_auth.txt','rb+')
+dir_path=os.path.dirname(os.path.realpath(__file__))
+f=open(dir_path.split('DoorSensor')[0]+'/twilio_auth.txt','rb+')
 contents=f.read().split()
 
 # the following line needs your Twilio Account SID and Auth Token
