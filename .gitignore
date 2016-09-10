@@ -2,4 +2,5 @@
 *.h264
 *.mp4
 camera
-
+*.csv
+data
