@@ -8,7 +8,7 @@ import utils
 
 def get_status(bot):
     user_messages,bot_messages=utils.get_messages(bot,'status')
-    return user_messages[0]['message']
+    return user_messages[0]['message'].lower()
 
 def main():
     timeout=utils.ConfigSectionMap('timeout') #timeout['loop'] is in minutes
@@ -49,16 +49,17 @@ def main():
 
 def search(mode,pir,bot):
     dir_path=os.path.dirname(os.path.realpath(__file__))
-    timeout=utils.ConfigSectionMap('timeout') #timeout['loop'] is in minutes
-    nomotion_timeout=2*int(timeout['nomotion'])
-    timeout=int(timeout['loop'])*60
+    timeout_config=utils.ConfigSectionMap('timeout') #timeout['loop'] is in minutes
+    nomotion_timeout=2*int(timeout_config['nomotion'])
+    loop_timeout=int(timeout_config['loop'])*60
 
     motion_count=0
     nomotion_count=0
     motion_data=[]
-    timeout = time.time() + timeout   # X minutes from now
+    timeout = time.time() + loop_timeout   # X minutes from now
     while True:
         if pir.motion_detected:
+            print "yes: %s" % motion_count
             motion_data.append((str((datetime.datetime.now()-datetime.timedelta(hours=4)).strftime("%I%M%p%d%m%Y")),time.time(),1))
             nomotion_count=0 ##reset
             if motion_count==0: ##first time motion is detected
@@ -68,6 +69,7 @@ def search(mode,pir,bot):
             else:
                 motion_count+=1
         else:
+            print "no: %s" % nomotion_count
             motion_data.append((str((datetime.datetime.now()-datetime.timedelta(hours=4)).strftime("%I%M%p%d%m%Y")),time.time(),0))
             nomotion_count+=1
 
@@ -78,7 +80,7 @@ def search(mode,pir,bot):
         if time.time()>timeout: ##check for status changes
             status=get_status(bot)
             if status==mode: #if status has not changed
-                timeout=time.time()+timeout ##reset timeout and continue looping
+                timeout=time.time()+loop_timeout ##reset timeout and continue looping
             elif status in ['off','shutdown']:
                 utils.write_to_csv(motion_data)
                 break
