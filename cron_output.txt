@@ -1,0 +1,51 @@
+
+ Now running on: 
+
+0119PM17092016
+current status is: 
+on
+2016-09-17 17:20:13.040916 : MOTION DETECTED
+2016-09-17 17:21:03.871932 : MOTION DETECTED
+2016-09-17 17:21:43.124531 : MOTION DETECTED
+2016-09-17 17:22:07.900793 : MOTION DETECTED
+2016-09-17 17:22:46.735163 : MOTION DETECTED
+2016-09-17 17:23:44.559472 : MOTION DETECTED
+current status is: 
+on
+current status is: 
+on
+2016-09-17 17:31:44.864312 : MOTION DETECTED
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+2016-09-17 18:01:44.663449 : MOTION DETECTED
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+current status is: 
+on
+2016-09-17 18:28:17.287339 : MOTION DETECTED
+2016-09-17 18:29:15.120543 : MOTION DETECTED
+2016-09-17 18:29:29.331800 : MOTION DETECTED
+2016-09-17 18:30:06.092085 : MOTION DETECTED
+2016-09-17 18:30:34.296066 : MOTION DETECTED
+current status is: 
+shutdown
+current status is: 
+shutdown
+current status is: 
+shutdown
