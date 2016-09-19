@@ -83,6 +83,9 @@ def search(mode,pir,bot):
             if status==mode: #if status has not changed
                 timeout=time.time()+loop_timeout ##reset timeout and continue looping
             elif status in ['off','shutdown']:
+                if motion_count>0 and nomotion_count<nomotion_timeout: ##if intruder still present and loop exits
+                    intruder_gone(curr_time,bot)
+                    utils.upload_vid(bot)
                 utils.write_to_csv(motion_data)
                 break
         time.sleep(0.5)
@@ -96,17 +99,21 @@ def motion_detected(curr_time,bot):
     # subprocess.check_output([dir_path+'/codesend','4478259 -p 0'])
     ##send text
     utils.post_message(bot,'alerts','intruder detected @ '+(datetime.datetime.now()-datetime.timedelta(hours=4)).strftime("%I:%M%p on %B %d, %Y"))
-    ###start recording (max 1 hour...), kill once motion has stopped.
+
+    ###VIDEO PORTION
+    ##start recording (max 1 hour...), kill once motion has stopped.
     # subprocess.Popen("raspivid -fps 30 -t 360000 -w 640 -h 480 -o " + "camera/" + curr_time + ".h264", shell=True)
-    subprocess.Popen("raspivid -fps 30 -t 10000 -w 640 -h 480 -o " + "camera/" + curr_time + ".h264", shell=True)
+    # subprocess.Popen("raspivid -fps 30 -t 10000 -w 640 -h 480 -o " + "camera/" + curr_time + ".h264", shell=True)
     return
 
 def intruder_gone(curr_time,bot):
     dir_path=os.path.dirname(os.path.realpath(__file__))
+    ###VIDEO PORTION
     ##kill video
-    subprocess.call(["pkill raspivid"], shell=True)
+    # subprocess.call(["pkill raspivid"], shell=True)
     ##convert file
-    subprocess.Popen("MP4Box -fps 30 -add " + "camera/" + curr_time + ".h264 " + "camera/" + curr_time + ".mp4", shell=True)
+    # subprocess.Popen("MP4Box -fps 30 -add " + "camera/" + curr_time + ".h264 " + "camera/" + curr_time + ".mp4", shell=True)
+
     ##turn off living room light
     # subprocess.check_output([dir_path+'/codesend','4478268 -p 0'])
     ##send update
@@ -128,7 +135,8 @@ main()
 ##9) build in something for dropped internet connections...(if you ever see the error message)
 ##10) add a special email to start up system (ie start python script)...need a bash script running to check emails say every 10 min?
 ##11) be able to ping system for current status (i.e. is it running?)
-
+##12) delete slack files if near 5GB limit
+##13)
 
 ##13) ping system for a current picture or short video
 ##14) ping system for temp/humidity?

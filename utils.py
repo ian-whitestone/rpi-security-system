@@ -48,10 +48,12 @@ def upload_vid(bot,channel="#videos"):
     main_dir=os.getcwd()
     allFiles = glob.glob(main_dir+ "/camera" + "/*.mp4")
     for filename in allFiles:
-        bot.files.upload(filename,channels=channel)
-        time.sleep(5)
-        os.remove(filename) ##delete after updating
-        os.remove(filename.split(".mp4")[0]+".h264") ##need to delete h264 files
+        response=bot.files.upload(filename,channels=channel)
+        if response.body['ok']:
+            os.remove(filename) ##delete after updating
+            os.remove(filename.split(".mp4")[0]+".h264") ##delete h264 version
+        else:
+            print ("video not uploaded due to: %s") % response.body['error']
     return
 
 def post_message(bot,channel,message):
