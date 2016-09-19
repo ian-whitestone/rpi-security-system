@@ -10,6 +10,7 @@ import slacker
 from slacker import Slacker
 import datetime
 import time
+import glob
 
 def ConfigSectionMap(section):
     Config = configparser.ConfigParser()
@@ -42,6 +43,16 @@ def create_bot():
     config_ops=ConfigSectionMap("slack")
     bot=Slacker(config_ops['token'])
     return bot
+
+def upload_vid(bot,channel="#videos"):
+    main_dir=os.getcwd()
+    allFiles = glob.glob(main_dir+ "/camera" + "/*.mp4")
+    for filename in allFiles:
+        bot.files.upload(filename,channels=channel)
+        time.sleep(5)
+        os.remove(filename) ##delete after updating
+        os.remove(filename.split(".mp4")[0]+".h264") ##need to delete h264 files
+    return
 
 def post_message(bot,channel,message):
     bot.chat.post_message(channel, message,username='iansrpi',icon_emoji=':robot_face:')
