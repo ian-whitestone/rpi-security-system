@@ -1,0 +1,29 @@
+# The number of seconds to wait in between uploads. For example, if an image was
+# uploaded to Dropbox 5m 33s after starting our script, a second image would not
+# be uploaded until 5m 36s. This parameter simply controls the frequency of
+# image uploads
+min_upload_seconds: 3.0
+
+# The minimum number of consecutive frames containing motion before an image can
+# be uploaded
+min_motion_frames: 8
+
+# The number of seconds to allow the Raspberry Pi camera module to “warmup” and
+# calibrate
+camera_warmup_time: 2.5
+
+# The minimum absolute value difference between our current frame and averaged
+# frame for a given pixel to be “triggered” as motion. Smaller values will lead
+# to more motion being detected, larger values to less motion detected.
+delta_thresh: 5
+
+# The width and height of the video frame from our Raspberry Pi camera
+resolution: [640, 480]
+
+# The desired Frames Per Second from our Raspberry Pi camera
+fps: 16
+
+# The minimum area size of an image (in pixels) for a region to be considered
+# motion or not. Smaller values will lead to more areas marked as motion,
+# whereas higher values of min_area  will only mark larger regions as motion
+min_area: 5000
