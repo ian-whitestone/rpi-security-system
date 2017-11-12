@@ -19,7 +19,7 @@ args = vars(ap.parse_args())
 with open('config.yml', 'r') as f:
     conf = yaml.safe_load(f)
 
-conf['show_video'] = (True if args.video == 1 else False)
+conf['show_video'] = (True if args['video'] == 1 else False)
 
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
@@ -36,7 +36,8 @@ lastUploaded = datetime.datetime.now()
 motionCounter = 0
 
 # capture frames from the camera
-for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+for f in camera.capture_continuous(rawCapture, format="bgr",
+                                            use_video_port=True):
 	# grab the raw NumPy array representing the image and initialize
 	# the timestamp and occupied/unoccupied text
 	frame = f.array
@@ -99,19 +100,6 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 			# check to see if the number of frames with consistent motion is
 			# high enough
 			if motionCounter >= conf["min_motion_frames"]:
-				# check to see if dropbox sohuld be used
-				if conf["use_dropbox"]:
-					# write the image to temporary file
-					t = TempImage()
-					cv2.imwrite(t.path, frame)
-
-					# upload the image to Dropbox and cleanup the tempory image
-					print("[UPLOAD] {}".format(ts))
-					path = "/{base_path}/{timestamp}.jpg".format(
-					    base_path=conf["dropbox_base_path"], timestamp=ts)
-					client.files_upload(open(t.path, "rb").read(), path)
-					t.cleanup()
-
 				# update the last uploaded timestamp and reset the motion
 				# counter
 				lastUploaded = timestamp
