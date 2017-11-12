@@ -19,7 +19,7 @@ args = vars(ap.parse_args())
 with open('config.yml', 'r') as f:
     conf = yaml.safe_load(f)
 
-conf['show_video'] = (True if args.video == 1 else False)
+conf['show_video'] = (True if args['video'] == '1' else False)
 
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
@@ -58,7 +58,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 	# accumulate the weighted average between the current frame and
 	# previous frames, then compute the difference between the current
 	# frame and running average
-	cv2.accumulateWeighted(gray, avg, 0.5)
+	cv2.accumulateWeighted(gray, avg, 0.1)
 	frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
 
 	# threshold the delta image, dilate the thresholded image to fill
@@ -100,16 +100,10 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 			# high enough
 			if motionCounter >= conf["min_motion_frames"]:
 				# check to see if dropbox sohuld be used
-				if conf["use_dropbox"]:
+				if conf["save_images"]:
 					# write the image to temporary file
 					t = TempImage()
 					cv2.imwrite(t.path, frame)
-
-					# upload the image to Dropbox and cleanup the tempory image
-					print("[UPLOAD] {}".format(ts))
-					path = "/{base_path}/{timestamp}.jpg".format(
-					    base_path=conf["dropbox_base_path"], timestamp=ts)
-					client.files_upload(open(t.path, "rb").read(), path)
 					t.cleanup()
 
 				# update the last uploaded timestamp and reset the motion
@@ -126,6 +120,9 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 	if conf["show_video"]:
 		# display the security feed
 		cv2.imshow("Security Feed", frame)
+		# cv2.imshow('Average', cv2.convertScaleAbs(avg))
+		# cv2.imshow("Frame delta", frameDelta)
+		# cv2.imshow("Thresh", thresh)
 		key = cv2.waitKey(1) & 0xFF
 
 		# if the `q` key is pressed, break from the lop
