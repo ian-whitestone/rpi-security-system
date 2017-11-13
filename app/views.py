@@ -40,6 +40,7 @@ def hello():
 
 @app.route('/on', methods=["GET", "POST"])
 def on():
+    global PID
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
@@ -49,7 +50,8 @@ def on():
         return 'No access to the ON command'
 
     # check if process is already running, if not, start it
-    if PID is not None:
+    print (PID)
+    if PID is None:
         PID = spawn_python_process('pycam.py')
         return ('Spawned PID: {0}. Keep track of this PID in order to kill it '
                 'later with the /off command'.format(PID)
@@ -59,6 +61,7 @@ def on():
 
 @app.route('/off', methods=["GET", "POST"])
 def off():
+    global PID
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
@@ -69,7 +72,12 @@ def off():
     if PID is not None:
         if check_process(PID) == False:
             return 'Already OFF'
-        if data['text'] != PID:
+        try:
+            int(data['text'])
+        except ValueError:
+            return 'Must supply the integer PID'
+        
+        if int(data['text']) != PID:
             return 'Invalid PID to kill! Type {0} to confirm kill'.format(PID)
         else:
             killed = kill_process(PID)
@@ -86,6 +94,8 @@ def off():
 
 @app.route('/status', methods=["GET", "POST"])
 def status():
+    global PID
+    
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
