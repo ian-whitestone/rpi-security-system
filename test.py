@@ -19,7 +19,8 @@ args = vars(ap.parse_args())
 with open('config.yml', 'r') as f:
     conf = yaml.safe_load(f)
 
-conf['show_video'] = (True if args['video'] == 1 else False)
+
+conf['show_video'] = (True if args['video'] == '1' else False)
 
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
@@ -59,7 +60,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr",
 	# accumulate the weighted average between the current frame and
 	# previous frames, then compute the difference between the current
 	# frame and running average
-	cv2.accumulateWeighted(gray, avg, 0.5)
+	cv2.accumulateWeighted(gray, avg, 0.1)
 	frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
 
 	# threshold the delta image, dilate the thresholded image to fill
@@ -114,6 +115,9 @@ for f in camera.capture_continuous(rawCapture, format="bgr",
 	if conf["show_video"]:
 		# display the security feed
 		cv2.imshow("Security Feed", frame)
+		# cv2.imshow('Average', cv2.convertScaleAbs(avg))
+		# cv2.imshow("Frame delta", frameDelta)
+		# cv2.imshow("Thresh", thresh)
 		key = cv2.waitKey(1) & 0xFF
 
 		# if the `q` key is pressed, break from the lop

@@ -1,3 +1,6 @@
+# Whether images should be saved after motion is detected
+save_images: False
+
 # The number of seconds to wait in between uploads. For example, if an image was
 # uploaded to Dropbox 5m 33s after starting our script, a second image would not
 # be uploaded until 5m 36s. This parameter simply controls the frequency of
