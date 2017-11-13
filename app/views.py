@@ -1,10 +1,11 @@
 from flask import Flask, request, make_response, render_template
 import json
 from datetime import datetime
+import os
 
 from app import app
 from .logger import create_logger
-from .utils import read_yaml, spawn_python_process, check_process, kill_process,
+from .utils import read_yaml, spawn_python_process, check_process, kill_process, \
                     latest_file, slack_upload
 
 log = create_logger(__name__, log_level='DEBUG')
@@ -124,24 +125,25 @@ def _validate_slack(token):
         return False
     return True
 
-@app.route("last_image", methods=["GET", "POST"])
+@app.route("/last_image", methods=["GET", "POST"])
 def last_image():
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
 
-    if 'text' in data.keys():
+    if data['text'] != '':
         text = data['text']
         if text.lower() == 'o' or text.lower() == 'u':
-            ftype = ('Occupied' if text.lower() == 'o' else 'Unoccupied')
+            ftype = ('Occupied*' if text.lower() == 'o' else 'Unoccupied*')
         else:
             return "Please specify 'O', 'U' or don't pass in anything"
     else:
         ftype = '*'
     # TODO: get channel the message came from
-    latest_file = latest_file(imgsDir, ftype)
-    if latest_file:
-        slack_upload(latest_file)
+    last_image = latest_file(imgsDir, ftype)
+    if last_image:
+        slack_upload(last_image, channel=data['channel_id'])
+        return 'Returned image: {0}'.format(os.path.basename(last_image))
     else:
         return 'No images found'
 
