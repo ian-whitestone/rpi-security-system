@@ -12,6 +12,28 @@ from .logger import create_logger
 
 log = create_logger(__name__, log_level='DEBUG')
 
+
+def read_yaml(yaml_file):
+    """Read a yaml file.
+    Args:
+        yaml_file (str): Full path of the yaml file.
+    Returns:
+        data (dict): Dictionary of yaml_file contents. None is returned if an
+        error occurs while reading.
+    Raises:
+        Exception: If the yaml_file cannot be opened.
+    """
+
+    data = None
+    try:
+        with open(yaml_file) as f:
+            # use safe_load instead load
+            data = yaml.safe_load(f)
+    except Exception as e:
+        log.error('Unable to read file %s. Error: %s' % (yaml_file,e))
+
+    return data
+
 CONF = read_yaml('app/private.yml')
 
 def slack_post(message, channel=CONF['alerts_channel'],
@@ -43,28 +65,6 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
         title = fname
     sc = SlackClient(token)
     sc.api_call("files.upload", channel=channel, filename=fname, title=title)
-
-def read_yaml(yaml_file):
-    """Read a yaml file.
-    Args:
-        yaml_file (str): Full path of the yaml file.
-    Returns:
-        data (dict): Dictionary of yaml_file contents. None is returned if an
-        error occurs while reading.
-    Raises:
-        Exception: If the yaml_file cannot be opened.
-    """
-
-    data = None
-    try:
-        with open(yaml_file) as f:
-            # use safe_load instead load
-            data = yaml.safe_load(f)
-    except Exception as e:
-        log.error('Unable to read file %s. Error: %s' % (yaml_file,e))
-
-    return data
-
 
 def spawn_python_process(fname):
     """Spawn a python process.
@@ -100,6 +100,8 @@ def kill_process(pid):
         if check_process(pid):
             os.kill(pid, signal.SIGKILL)
             killed = check_process(pid)
+            if killed:
+                log.info('Successfully killed process')
         else:
             killed = True
     except Exception as e:
