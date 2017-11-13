@@ -36,7 +36,7 @@ def hello():
         return 'Error'
     log.info('hello slack command received with data: %s' % data)
     text = data['text']
-    return 'Success'
+    return 'Hello {0}'.format(data['user_name'])
 
 @app.route('/on', methods=["GET", "POST"])
 def on():
@@ -49,15 +49,17 @@ def on():
     if data['user_id'] != CONF['ian_uid']:
         return 'No access to the ON command'
 
+    if PID is not None:
+        if check_process(PID) == False:
+            PID = None
+            
     # check if process is already running, if not, start it
-    print (PID)
     if PID is None:
-        PID = spawn_python_process('pycam.py')
+        PID = spawn_python_process('app/pycam.py')
         return ('Spawned PID: {0}. Keep track of this PID in order to kill it '
-                'later with the /off command'.format(PID)
-                )
+                'later with the /off command'.format(PID))
     else:
-        return 'Already ON'
+        return 'PiCam is already ON'
 
 @app.route('/off', methods=["GET", "POST"])
 def off():
@@ -71,7 +73,7 @@ def off():
 
     if PID is not None:
         if check_process(PID) == False:
-            return 'Already OFF'
+            return 'PiCam is already OFF'
         try:
             int(data['text'])
         except ValueError:
@@ -82,12 +84,13 @@ def off():
         else:
             killed = kill_process(PID)
             if killed:
+                message = 'Successfully killed {0}'.format(PID)
                 PID = None
-                return 'Success'
+                return message
             else:
-                return 'Failed to kill process'
+                return 'Failed to kill process {0}'.format(PID)
     else:
-        return 'Already OFF'
+        return 'PiCam is already OFF'
 
     log.info('OFF slack command received with data: %s' % data)
     text = data['text']
@@ -102,9 +105,10 @@ def status():
 
     if PID is not None:
         if check_process(PID) == False:
+            PID = None
             return 'PiCam Status: OFF'
         else:
-            return 'PiCam Status: ON'
+            return 'PiCam Status: ON. Running under {0}'.format(PID)
     else:
         return 'PiCam Status: OFF'
 
