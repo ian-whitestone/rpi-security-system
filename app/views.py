@@ -1,13 +1,15 @@
 from flask import Flask, request, make_response, render_template
 import json
+from datetime import datetime
 
 from app import app
 from .logger import create_logger
-from .utils import read_yaml
+from .utils import read_yaml, spawn_python_process, check_process, kill_process
 
 log = create_logger(__name__, log_level='DEBUG')
 
 CONF = read_yaml('app/private.yml')
+PID = None
 
 def _parse_slash_post(form):
     """Verifies a request came from slack and parses the form in the POST
@@ -19,7 +21,7 @@ def _parse_slash_post(form):
         data (dict): dictionary representation of the IMD if request was
             verified. Otherwise, returns False
     """
-    raw_dict = imd.to_dict(flat=False)
+    raw_dict = form.to_dict(flat=False)
     data = {k:v[0] for k,v in raw_dict.items()}
 
     if _validate_slack(data['token']) == False:
@@ -42,24 +44,60 @@ def on():
     if data == False:
         return 'Error'
 
-    ## validate user who sent the request, return no access 
+    #TODO: turn into a decorator
+    if data['user_id'] != CONF['ian_uid']:
+        return 'No access to the ON command'
 
     # check if process is already running, if not, start it
-    # if already running, return "already running"
-
-    log.info('ON slack command received with data: %s' % data)
-    text = data['text']
-    return 'Success'
+    if PID is not None:
+        PID = spawn_python_process('pycam.py')
+        return ('Spawned PID: {0}. Keep track of this PID in order to kill it '
+                'later with the /off command'.format(PID)
+                )
+    else:
+        return 'Already ON'
 
 @app.route('/off', methods=["GET", "POST"])
 def off():
-    ## validate user who sent the request
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
+
+    if data['user_id'] != CONF['ian_uid']:
+        return 'No access to the OFF command'
+
+    if PID is not None:
+        if check_process(PID) == False:
+            return 'Already OFF'
+        if data['text'] != PID:
+            return 'Invalid PID to kill! Type {0} to confirm kill'.format(PID)
+        else:
+            killed = kill_process(PID)
+            if killed:
+                PID = None
+                return 'Success'
+            else:
+                return 'Failed to kill process'
+    else:
+        return 'Already OFF'
+
     log.info('OFF slack command received with data: %s' % data)
     text = data['text']
-    return 'Success'
+
+@app.route('/status', methods=["GET", "POST"])
+def status():
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    if PID is not None:
+        if check_process(PID) == False:
+            return 'PiCam Status: OFF'
+        else:
+            return 'PiCam Status: ON'
+    else:
+        return 'PiCam Status: OFF'
+
 
 def _validate_slack(token):
         # ============ Slack Token Verification =========== #
@@ -108,4 +146,5 @@ def hears():
 
 @app.route('/')
 def index():
-    return 'Hello world'
+    timestamp = datetime.now()
+    return 'Hello world: {0}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))

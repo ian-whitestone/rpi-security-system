@@ -15,12 +15,20 @@
 
 ## TODO
 
-Look into increasing FPS with [threading](https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/)
+* Look into increasing FPS with [threading](https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/)
+
+* on/off slash commands
+* status slash command (return whether running or not)
+* picam slack updates
+--> initial picture when starting up
+--> post & upload picture when motion detected
+
+* picture slash command (return most recent image)
 
 
 ## Slack
 
-
+1) Using the RTM API
 In the alerts channel, general message looks like:
 
 ```python
