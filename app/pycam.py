@@ -8,15 +8,19 @@ import time
 import cv2
 import os
 
-from .logger import create_logger
-from .utils import read_yaml, slack_post, slack_upload
+from logger import create_logger
+from utils import read_yaml, slack_post, slack_upload
 
-log_file = '/app/logs' + datetime.now().strftime("%Y-%m-%d-%H:%M")
+currDir = os.path.dirname(__file__)
+
+log_base_file = datetime.now().strftime("%Y-%m-%d-%H:%M")
+log_file = os.path.join(currDir, 'logs', log_base_file)
 log = create_logger(__name__, log_level='DEBUG', log_filename=log_file)
 
 
-CONF = read_yaml('app/config.yml')
-IMG_PATH = 'app/imgs'
+CONF = read_yaml(os.path.join(currDir,'config.yml'))
+IMG_PATH = os.path.join(currDir, 'imgs')
+
 
 class PiCam():
 

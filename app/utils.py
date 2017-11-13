@@ -6,10 +6,15 @@ import glob
 import os
 import re
 import sys
+import psutil
 import subprocess, signal
+import time
 from slackclient import SlackClient
 
-from .logger import create_logger
+try:
+    from .logger import create_logger
+except:
+    from logger import create_logger
 
 log = create_logger(__name__, log_level='DEBUG')
 
@@ -35,7 +40,7 @@ def read_yaml(yaml_file):
 
     return data
 
-CONF = read_yaml('app/private.yml')
+CONF = read_yaml(os.path.join(os.path.dirname(__file__),'private.yml'))
 
 def slack_post(message, channel=CONF['alerts_channel'],
                     token=CONF['bot_token']):
@@ -49,7 +54,12 @@ def slack_post(message, channel=CONF['alerts_channel'],
     """
     log.debug("Posting to slack")
     sc = SlackClient(token)
-    api_call = sc.api_call("chat.postMessage", channel=channel, text=message)
+    api_call = sc.api_call(
+                        "chat.postMessage",
+                        as_user=True,
+                        channel=channel,
+                        text=message
+                        )
     if api_call['ok']:
         log.info('Posted succesfully')
     else:
@@ -75,7 +85,7 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
                         "files.upload",
                         channels=channel,
                         filename=fname,
-                        file=open(fname, 'rb')
+                        file=open(fname, 'rb'),
                         title=title
                         )
 
@@ -116,10 +126,13 @@ def kill_process(pid):
     log.info('Attempting to kill %s' % pid)
     try:
         if check_process(pid):
+            log.info('Killing pid: %s' % pid)
             os.kill(pid, signal.SIGKILL)
-            killed = check_process(pid)
-            if killed:
+            time.sleep(2)
+            status = check_process(pid)
+            if status == False:
                 log.info('Successfully killed process')
+                killed = True
         else:
             killed = True
     except Exception as e:
@@ -137,10 +150,14 @@ def check_process(pid):
     log.info('Checking if %s is running' % pid)
     try:
         os.kill(pid, 0)
+        proc = psutil.Process(pid)
+        if proc.status() == psutil.STATUS_ZOMBIE:
+            return False
+        else:
+            log.info('Process %s is running' % pid)
+            return True
     except OSError:
         return False
-    else:
-        return True
 
 
 def latest_file(dir, ftype='*'):
