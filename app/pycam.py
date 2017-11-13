@@ -2,16 +2,17 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import argparse
 import warnings
-import datetime
+from datetime import datetime
 import imutils
 import time
 import cv2
 import os
 
 from .logger import create_logger
-from .utils import read_yaml
+from .utils import read_yaml, slack_post, slack_upload
 
-log = create_logger(__name__, log_level='DEBUG')
+log_file = '/app/logs' + datetime.now().strftime("%Y-%m-%d-%H:%M")
+log = create_logger(__name__, log_level='DEBUG', log_filename=log_file)
 
 
 CONF = read_yaml('app/config.yml')
@@ -29,6 +30,7 @@ class PiCam():
         self.min_motion_frames = CONF['min_motion_frames']
         self.frame_width = CONF['frame_width']
         self.warmup_time = CONF["camera_warmup_time"]
+        self.save_images = CONF['save_images']
         self._init_camera()
 
     def _init_camera():
@@ -47,7 +49,7 @@ class PiCam():
         	# grab the raw NumPy array representing the image and initialize
         	# the timestamp and the occupied status to false
         	frame = f.array
-            timestamp = datetime.datetime.now()
+            timestamp = datetime.now()
             occupied = False
 
         	# resize the frame, convert it to grayscale, and blur it
@@ -86,7 +88,7 @@ class PiCam():
         		# compute the bounding box for the contour, draw it on the
         		# frame, and update the text
         		(x, y, w, h) = cv2.boundingRect(c)
-        		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        		cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 0), 2)
         		occupied = True
 
         	# draw the text and timestamp on the frame
@@ -111,19 +113,23 @@ class PiCam():
                         # motion counter
         				lastOccUploaded = timestamp
         				motionCounter = 0
-                        fpath = os.path.join(IMG_PATH, text + '_' + ts)
-                        log.info('Saving occupied image to %s' % fpath)
-                        cv2.imwrite(fpath, frame)
-                        # TODO post to slack
 
+                        slack_post('<PiCam> {0} : Room is occupied'.format(ts))
+                        if self.save_images:
+                            fpath = os.path.join(IMG_PATH, text + '_' + ts)
+                            log.info('Saving occupied image to %s' % fpath)
+                            cv2.imwrite(fpath, frame)
+                            log.info('Uploading to slack')
+                            slack_upload(fpath, title=fpath)
         	else:
         		motionCounter = 0
                 elapsed = (timestamp - lastUnoccUploaded).seconds
         		if  elapsed >= self.unocc_min_upload_seconds:
                     lastUnoccUploaded = timestamp
-                    fpath = os.path.join(IMG_PATH, text + '_' + ts)
-                    log.info('Saving unoccupied image to %s' % fpath)
-                    cv2.imwrite(fpath, frame)
+                    if self.save_images:
+                        fpath = os.path.join(IMG_PATH, text + '_' + ts)
+                        log.info('Saving unoccupied image to %s' % fpath)
+                        cv2.imwrite(fpath, frame)
 
         	# clear the stream in preparation for the next frame
         	self.rawCapture.truncate(0)
