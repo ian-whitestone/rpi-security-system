@@ -46,8 +46,14 @@ def slack_post(message, channel=CONF['alerts_channel'],
         token (str): Token to use with SlackClient. Defaults to bot_token
             specified in private.yml
     """
+    log.debug("Posting to slack")
     sc = SlackClient(token)
-    sc.api_call("chat.postMessage", channel=channel, text=message)
+    api_call = sc.api_call("chat.postMessage", channel=channel, text=message)
+    if api_call['ok']:
+        log.info('Posted succesfully')
+    else:
+        log.error('Unable to post, response: %s' % sc)
+
     return
 
 def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
@@ -64,7 +70,18 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
     if title is None:
         title = fname
     sc = SlackClient(token)
-    sc.api_call("files.upload", channel=channel, filename=fname, title=title)
+    api_call = sc.api_call(
+                        "files.upload",
+                        channels=channel,
+                        filename=fname,
+                        file=open(fname, 'rb')
+                        title=title
+                        )
+
+    if api_call['ok']:
+        log.info('Uploaded succesfully')
+    else:
+        log.error('Unable to upload, response: %s' % sc)
 
 def spawn_python_process(fname):
     """Spawn a python process.
