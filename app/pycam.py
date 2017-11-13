@@ -33,7 +33,7 @@ class PiCam():
 		self.save_images = CONF['save_images']
 		self._init_camera()
 
-	def _init_camera():
+	def _init_camera(self):
 		log.info('Initializing PiCamera')
 		self.camera = PiCamera()
 		self.camera.resolution = tuple(self.resolution)
