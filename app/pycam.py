@@ -2,7 +2,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import argparse
 import warnings
-from datetime import datetime
+from datetime import datetime, timedelta
 import imutils
 import time
 import cv2
@@ -39,12 +39,16 @@ class PiCam():
 		self.camera.resolution = tuple(self.resolution)
 		self.camera.framerate = self.fps
 
-	def start_stream():
-		self.rawCapture = PiRGBArray(camera, size=tuple(self.resolution))
+	def start_stream(self):
+		self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
 		log.info('Warming up camera')
 		time.sleep(self.warmup_time)
+		avg = None
+		motionCounter = 0
+		lastOccUploaded = datetime.now() + timedelta(minutes=1) # 1 minute startup period
+		lastUnoccUploaded = datetime.now() - timedelta(minutes=10)
 
-		for f in camera.capture_continuous(self.rawCapture, format="bgr",
+		for f in self.camera.capture_continuous(self.rawCapture, format="bgr",
 												use_video_port=True):
 			# grab the raw NumPy array representing the image and initialize
 			# the timestamp and the occupied status to false
@@ -100,7 +104,7 @@ class PiCam():
 							cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
 			if occupied:
-				log.info('Room is occupied!')
+				log.debug('Room is occupied!')
 				# check to see if enough time has passed between uploads
 				elapsed = (timestamp - lastOccUploaded).seconds
 				if  elapsed >= self.occ_min_upload_seconds:
@@ -116,7 +120,7 @@ class PiCam():
 
 						slack_post('<PiCam> {0} : Room is occupied'.format(ts))
 						if self.save_images:
-							fpath = os.path.join(IMG_PATH, text + '_' + ts)
+							fpath = os.path.join(IMG_PATH, text + '_' + ts + '.jpg')
 							log.info('Saving occupied image to %s' % fpath)
 							cv2.imwrite(fpath, frame)
 							log.info('Uploading to slack')
@@ -127,7 +131,7 @@ class PiCam():
 				if  elapsed >= self.unocc_min_upload_seconds:
 					lastUnoccUploaded = timestamp
 					if self.save_images:
-						fpath = os.path.join(IMG_PATH, text + '_' + ts)
+						fpath = os.path.join(IMG_PATH, text + '_' + ts + '.jpg')
 						log.info('Saving unoccupied image to %s' % fpath)
 						cv2.imwrite(fpath, frame)
 
