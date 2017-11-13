@@ -2,6 +2,7 @@
 Utils module, contains utility functions used throughout the postgrez codebase.
 """
 import yaml
+import glob
 import os
 import re
 import sys
@@ -140,3 +141,33 @@ def check_process(pid):
         return False
     else:
         return True
+
+
+def latest_file(dir, ftype='*'):
+    """Return the last file created in a directory.
+
+    Args:
+        dir (str): Path of the directory
+        ftype (str): Filetype to match. For example, supply '*.csv' to get the
+            latest csv, or 'Master*'' to get the latest filename starting with
+            'Master'. Defaults to '*' which matches all files.
+    Returns:
+        latest_file (str): Last file created in the directory.
+    """
+    latest_file = None
+    if os.path.isdir(dir) == False:
+        log.error('Please supply a valid directory')
+        return None
+
+    if dir.endswith('/'):
+        pass
+    else:
+        dir += '/'
+
+    list_of_files = glob.glob(dir + ftype) # all filetypes
+    if len(list_of_files) > 0:
+        latest_file = max(list_of_files, key=os.path.getctime)
+    else:
+        log.error('No files in directory')
+
+    return latest_file

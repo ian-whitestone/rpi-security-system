@@ -4,7 +4,8 @@ from datetime import datetime
 
 from app import app
 from .logger import create_logger
-from .utils import read_yaml, spawn_python_process, check_process, kill_process
+from .utils import read_yaml, spawn_python_process, check_process, kill_process,
+                    latest_file
 
 log = create_logger(__name__, log_level='DEBUG')
 
@@ -76,7 +77,7 @@ def off():
             int(data['text'])
         except ValueError:
             return 'Must supply the integer PID'
-        
+
         if int(data['text']) != PID:
             return 'Invalid PID to kill! Type {0} to confirm kill'.format(PID)
         else:
@@ -95,7 +96,7 @@ def off():
 @app.route('/status', methods=["GET", "POST"])
 def status():
     global PID
-    
+
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
@@ -117,6 +118,20 @@ def _validate_slack(token):
         return False
     return True
 
+@app.route("last_image", methods=["GET", "POST"])
+def last_image():
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    if 'text' in data.keys():
+        text = data['text']
+        if text.lower() == 'o' or text.lower() == 'u':
+            ftype = ('Occupied' if text.lower() == 'o' else 'Unoccupied')
+        else:
+            return "Please specify 'O', 'U' or don't pass in anything"
+    # TODO: get channel the message came from
+    latest_file = latest_file()
 
 @app.route("/listening", methods=["GET", "POST"])
 def hears():
