@@ -79,7 +79,7 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
             specified in private.yml
     """
     if title is None:
-        title = fname
+        title = os.path.basename(fname)
     sc = SlackClient(token)
     api_call = sc.api_call(
                         "files.upload",
