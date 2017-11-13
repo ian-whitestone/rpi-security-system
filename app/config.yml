@@ -1,11 +1,8 @@
 # Whether images should be saved after motion is detected
 save_images: True
 
-# The number of seconds to wait in between uploads. For example, if an image was
-# uploaded to Dropbox 5m 33s after starting our script, a second image would not
-# be uploaded until 5m 36s. This parameter simply controls the frequency of
-# image uploads
-occ_min_upload_seconds: 3.0
+# The number of seconds to wait in between uploads.
+occ_min_upload_seconds: 5.0
 
 # The number of seconds to wait inbetween no motion detected uploads.
 unocc_min_upload_seconds: 600
