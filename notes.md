@@ -16,3 +16,21 @@
 ## TODO
 
 Look into increasing FPS with [threading](https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/)
+
+
+## Slack
+
+1) In the alerts channel, general message looks like:
+
+```python
+[{'team': 'T2CP3SBA7', 'channel': 'C2CQJTVML', 'source_team': 'T2CP3SBA7', 'ts': '1510520180.000086', 'user': 'U2CQFVBBN', 'type': 'message', 'text': 'good afternooon. this is a test.'}]
+
+```
+
+
+```python
+[{'channel': 'C2CQJTVML', 'team': 'T2CP3SBA7', 'user': 'U2CQFVBBN', 'text': '<@U2CQKA1GU> im talking to you :robot_face:', 'type': 'message', 'source_team': 'T2CP3SBA7', 'ts': '1510520298.000009'}]
+
+[{'channel': 'C2CQJTVML', 'launchUri': 'slack://channel?id=C2CQJTVML&message=1510520298000009&team=T2CP3SBA7', 'title': "Ian's Rpi", 'ssbFilename': 'knock_brush.mp3', 'msg': '1510520298.000009', 'subtitle': '#alerts', 'is_shared': False, 'type': 'desktop_notification', 'content': 'ian-whitestone: @iansrpi im talking to you :robot_face:', 'event_ts': '1510520298.000036', 'imageUri': None, 'avatarImage': 'https://secure.gravatar.com/avatar/dc8f7cbc903f01d20f06ec921b5aa9eb.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0016-192.png'}]
+
+```
