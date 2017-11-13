@@ -5,11 +5,13 @@ from datetime import datetime
 from app import app
 from .logger import create_logger
 from .utils import read_yaml, spawn_python_process, check_process, kill_process,
-                    latest_file
+                    latest_file, slack_upload
 
 log = create_logger(__name__, log_level='DEBUG')
 
-CONF = read_yaml('app/private.yml')
+currDir = os.path.dirname(__file__)
+imgsDir = os.path.join(currDir, 'imgs')
+CONF = read_yaml(os.path.join(currDir, 'private.yml'))
 PID = None
 
 def _parse_slash_post(form):
@@ -53,10 +55,10 @@ def on():
     if PID is not None:
         if check_process(PID) == False:
             PID = None
-            
+
     # check if process is already running, if not, start it
     if PID is None:
-        PID = spawn_python_process('app/pycam.py')
+        PID = spawn_python_process(os.path.join(currDir, 'pycam.py'))
         return ('Spawned PID: {0}. Keep track of this PID in order to kill it '
                 'later with the /off command'.format(PID))
     else:
@@ -134,8 +136,14 @@ def last_image():
             ftype = ('Occupied' if text.lower() == 'o' else 'Unoccupied')
         else:
             return "Please specify 'O', 'U' or don't pass in anything"
+    else:
+        ftype = '*'
     # TODO: get channel the message came from
-    latest_file = latest_file()
+    latest_file = latest_file(imgsDir, ftype)
+    if latest_file:
+        slack_upload(latest_file)
+    else:
+        return 'No images found'
 
 @app.route("/listening", methods=["GET", "POST"])
 def hears():
