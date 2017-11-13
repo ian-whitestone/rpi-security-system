@@ -9,18 +9,56 @@ log = create_logger(__name__, log_level='DEBUG')
 
 CONF = read_yaml('app/private.yml')
 
+def _parse_slash_post(form):
+    """Verifies a request came from slack and parses the form in the POST
+    request that comes from Slack when a custom slash command is used.
+
+    Args:
+        form (ImmutableMultiDict): Info from the POST request, as an IMD object.
+    Returns :
+        data (dict): dictionary representation of the IMD if request was
+            verified. Otherwise, returns False
+    """
+    raw_dict = imd.to_dict(flat=False)
+    data = {k:v[0] for k,v in raw_dict.items()}
+
+    if _validate_slack(data['token']) == False:
+        return False
+
+    return data
+
 @app.route('/hello', methods=["GET", "POST"])
 def hello():
-    # immutable multi-dict
-    imd = request.form
-    data = imd.to_dict(flat=False)
-    log.info('hello slach command received with data: %s' % data)
-    token = data['token'][0]
-    text = data['text'][0]
-    
-    if _validate_slack(token) == False:
+    data = _parse_slash_post(request.form)
+    if data == False:
         return 'Error'
-    
+    log.info('hello slack command received with data: %s' % data)
+    text = data['text']
+    return 'Success'
+
+@app.route('/on', methods=["GET", "POST"])
+def on():
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    ## validate user who sent the request, return no access 
+
+    # check if process is already running, if not, start it
+    # if already running, return "already running"
+
+    log.info('ON slack command received with data: %s' % data)
+    text = data['text']
+    return 'Success'
+
+@app.route('/off', methods=["GET", "POST"])
+def off():
+    ## validate user who sent the request
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+    log.info('OFF slack command received with data: %s' % data)
+    text = data['text']
     return 'Success'
 
 def _validate_slack(token):
@@ -30,13 +68,15 @@ def _validate_slack(token):
     if CONF['rpi_cam_app']['verification_token'] != token:
         return False
     return True
-    
+
 
 @app.route("/listening", methods=["GET", "POST"])
 def hears():
     """
     This route listens for incoming events from Slack and uses the event
     handler helper function to route events to our Bot.
+
+    Modified from: https://github.com/slackapi/Slack-Python-Onboarding-Tutorial
     """
 
     str_response = request.data.decode('utf-8')
@@ -59,7 +99,7 @@ def hears():
         # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
         # Slack's automatic retries during development.
         return make_response(message, 403, {"X-Slack-No-Retry": 1})
-    
+
     # If our bot hears things that are not events we've subscribed to,
     # send a quirky but helpful error response
     return make_response("[NO EVENT IN SLACK REQUEST] These are not the droids\
