@@ -4,6 +4,7 @@
 *.csv
 private.yml
 slack-test.py
+test*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
