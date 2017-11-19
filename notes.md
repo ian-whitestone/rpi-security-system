@@ -43,3 +43,72 @@ In the alerts channel, general message looks like:
 [{'channel': 'XXXXX', 'launchUri': 'slack://channel?id=XXXXX&message=1510520298000009&team=XXXXXX', 'title': "Ian's Rpi", 'ssbFilename': 'knock_brush.mp3', 'msg': '1510520298.000009', 'subtitle': '#alerts', 'is_shared': False, 'type': 'desktop_notification', 'content': 'ian-whitestone: @iansrpi im talking to you :robot_face:', 'event_ts': '1510520298.000036', 'imageUri': None, 'avatarImage': 'https://secure.gravatar.com/avatar/dc8f7cbc903f01d20f06ec921b5aa9eb.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0016-192.png'}]
 
 ```
+
+
+## MongoDB
+
+General Notes:
+* Don't need to explicitly create databases or collections (i.e. tables). I.e. running the snippet below for the first time will automatically create the "test" database (if it doesn't already exist, otherwise it would just connect to it). Same thing applies for the "test_table" collection (Note - I'm still getting used to calling them collections..)
+
+```python
+mongo_url = "mongodb://localhost:27017"
+client = MongoClient(mongo_url)
+db = client.test
+
+for x in range(1,10):
+    doc = {'doc_id': x, 'image': None}
+    db.test_table.insert_one(doc)
+```
+
+* Querying
+```python
+## return everything
+cursor = db.test_table.find({})
+
+for doc in cursor:
+    print (doc)
+
+## query by doc id
+cursor = db.test_table.find({'doc_id':1})
+
+for doc in cursor:
+    print (doc)
+``
+
+* Storing Images with GridFS
+
+```python
+from pymongo import MongoClient
+from gridfs import GridFS
+
+mongo_url = "mongodb://localhost:27017"
+client = MongoClient(mongo_url)
+
+db =client.gridfs_example
+fs = GridFS(db)
+
+fpath = 'path/to/my/image'
+id = fs.put(open(fpath, 'rb'), filename='ians_test_image', other=999)
+
+# Get object by ID
+obj = fs.get(id)
+
+# Get object by other metadata
+obj = fs.find_one({'filename':'ians_test_image'})
+
+# read contents
+contents = obj.read()
+# Note: calling obj.read() a second time returns nothing for some reason..
+
+# read other properties
+filename = obj.filename
+other = obj.other
+
+# write the byte contents to an image file locally
+with open('./myimage.tif', 'wb') as f:
+    f.write(contents)
+
+client.close()
+```
+
+## Other
