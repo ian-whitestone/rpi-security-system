@@ -17,7 +17,7 @@ log_base_file = datetime.now().strftime("%Y-%m-%d-%H:%M")
 log_file = os.path.join(currDir, 'logs', log_base_file)
 log = create_logger(__name__, log_level='DEBUG', log_filename=log_file)
 
-
+print(os.path.join(currDir,'config.yml'))
 CONF = read_yaml(os.path.join(currDir,'config.yml'))
 IMG_PATH = os.path.join(currDir, 'imgs')
 
@@ -42,7 +42,7 @@ class PiCam():
         self.camera = PiCamera()
         self.camera.resolution = tuple(self.resolution)
         self.camera.framerate = self.fps
-
+        self.camera.vflip = True 
     def start_stream(self):
         self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
         log.info('Warming up camera')
