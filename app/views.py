@@ -2,10 +2,11 @@ from flask import Flask, request, make_response, render_template
 import json
 from datetime import datetime
 import os
+import pantilthat
 
 from app import app
 from .logger import create_logger
-from .utils import read_yaml, spawn_python_process, check_process, kill_process, \
+from .utils import read_yaml, spawn_python_process, check_process, cess, \
                     latest_file, slack_upload
 
 log = create_logger(__name__, log_level='DEBUG')
@@ -85,7 +86,7 @@ def off():
 
         if int(data['text']) != PID:
             return 'Invalid PID to kill! Type {0} to confirm kill'.format(PID)
-        else:
+        else: #TODO refactor as this is used below
             killed = kill_process(PID)
             if killed:
                 message = 'Successfully killed {0}'.format(PID)
@@ -115,6 +116,39 @@ def status():
             return 'PiCam Status: ON. Running under {0}'.format(PID)
     else:
         return 'PiCam Status: OFF'
+
+@app.route('/rotate', methods=["GET", "POST"])
+def status():
+    global PID
+
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    args = data['text'].split()
+    if len(args) != '2':
+        return ("Incorrect input. Please provide as two integers separated by "
+                    " a space. i.e. '0 0 '")
+    try:
+        tilt = int(args[0])
+        pan = int(args[1])
+    except ValueError:
+        return 'Did not receive integer arguments'
+
+    killed = kill_process(PID)
+    if killed:
+        PID = None
+        return message
+    else:
+        return 'Failed to kill process {0}'.format(PID)
+
+    pantilthat.tilt(tilt)
+    pantilthat.pan(pan)
+    PID = spawn_python_process(os.path.join(currDir, 'pycam.py'))
+
+    message = ('Successfully panned to {0} and tilted to {1}. Spawned new '
+                'process - PID {2}'.format(pan, tilt, PID))
+    return message
 
 
 def _validate_slack(token):
