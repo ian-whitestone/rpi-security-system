@@ -6,8 +6,8 @@ import pantilthat
 
 from app import app
 from .logger import create_logger
-from .utils import read_yaml, spawn_python_process, check_process, cess, \
-                    latest_file, slack_upload
+from .utils import read_yaml, spawn_python_process, check_process, \
+                    latest_file, slack_upload, kill_process
 
 log = create_logger(__name__, log_level='DEBUG')
 
@@ -118,7 +118,7 @@ def status():
         return 'PiCam Status: OFF'
 
 @app.route('/rotate', methods=["GET", "POST"])
-def status():
+def rotate():
     global PID
 
     data = _parse_slash_post(request.form)
@@ -126,28 +126,27 @@ def status():
         return 'Error'
 
     args = data['text'].split()
-    if len(args) != '2':
+    
+    if len(args) != 2:
         return ("Incorrect input. Please provide as two integers separated by "
-                    " a space. i.e. '0 0 '")
+                    " a space. i.e. '0 0'")
     try:
         tilt = int(args[0])
         pan = int(args[1])
     except ValueError:
         return 'Did not receive integer arguments'
 
-    killed = kill_process(PID)
-    if killed:
-        PID = None
-        return message
-    else:
-        return 'Failed to kill process {0}'.format(PID)
+    if PID is not None:
+        killed = kill_process(PID)
+        if killed:
+            PID = None
 
     pantilthat.tilt(tilt)
     pantilthat.pan(pan)
     PID = spawn_python_process(os.path.join(currDir, 'pycam.py'))
 
     message = ('Successfully panned to {0} and tilted to {1}. Spawned new '
-                'process - PID {2}'.format(pan, tilt, PID))
+                'process - PID {2}'.format(tilt, pan, PID))
     return message
 
 
