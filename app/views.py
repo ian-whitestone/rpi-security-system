@@ -13,6 +13,7 @@ log = create_logger(__name__, log_level='DEBUG')
 
 currDir = os.path.dirname(__file__)
 imgsDir = os.path.join(currDir, 'imgs')
+templatesDir = os.path.join(currDir, 'templates')
 CONF = read_yaml(os.path.join(currDir, 'private.yml'))
 PID = None
 
@@ -126,7 +127,7 @@ def rotate():
         return 'Error'
 
     args = data['text'].split()
-    
+
     if len(args) != 2:
         return ("Incorrect input. Please provide as two integers separated by "
                     " a space. i.e. '0 0'")
@@ -219,4 +220,5 @@ def hears():
 @app.route('/')
 def index():
     timestamp = datetime.now()
-    return 'Hello world: {0}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+    # return 'Hello world: {0}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+    return render_template('index.html')
