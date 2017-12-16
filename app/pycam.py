@@ -42,7 +42,9 @@ class PiCam():
         self.camera = PiCamera()
         self.camera.resolution = tuple(self.resolution)
         self.camera.framerate = self.fps
-        self.camera.vflip = True 
+        self.camera.vflip = True
+        self.camera.hflip = True
+        
     def start_stream(self):
         self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
         log.info('Warming up camera')

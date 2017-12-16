@@ -150,6 +150,20 @@ def rotate():
                 'process - PID {2}'.format(tilt, pan, PID))
     return message
 
+@app.route('/web_rotate', methods=["GET", "POST"])
+def web_rotate():
+    rotate = request.args.get('rotate')
+    action = {
+        'L': ('tilt', 5),
+        'R': ('tilt', -5),
+        'U': ('pan', -5),
+        'D': ('pan', 5)
+        }
+
+    if rotate in action.keys():
+        move = action[rotate]
+        getattr(pantilthat, move[0])(move[1])
+    return
 
 def _validate_slack(token):
         # ============ Slack Token Verification =========== #

@@ -12,6 +12,13 @@
 4) [Motion detection system](https://www.pyimagesearch.com/2015/06/01/home-surveillance-and-motion-detection-with-the-raspberry-pi-python-and-opencv/)
 -  Uses picam!
 
+5) Video Streaming
+http://www.instructables.com/id/Raspberry-Pi-Video-Streaming/
+https://www.linux-projects.org/uv4l/installation/
+
+`$ pkill uv4l`
+`$ uv4l -nopreview --auto-video_nr --driver raspicam --encoding mjpeg --vflip yes --hflip yes --width 640 --height 480 --framerate 20 --server-option '--port=9090' --server-option '--max-queued-connections=30' --server-option '--max-streams=25' --server-option '--max-threads=29' --server-option '--user-password=changeme' --server-option '--admin-password=changeme'`
+
 
 ## TODO
 
