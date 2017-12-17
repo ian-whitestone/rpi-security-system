@@ -2,7 +2,7 @@ from flask import Flask, request, make_response, render_template
 import json
 from datetime import datetime
 import os
-import pantilthat
+import panner as pantilthat
 
 from app import app
 import subprocess
@@ -159,29 +159,29 @@ def rotate():
         return ("Incorrect input. Please provide as two integers separated by "
                     " a space. i.e. '0 0'")
     try:
-        tilt = int(args[0])
-        pan = int(args[1])
+        pan = int(args[0])
+        tilt = int(args[1])
     except ValueError:
         return 'Did not receive integer arguments'
 
     turn_off_pycam()
 
-    pantilthat.tilt(tilt)
     pantilthat.pan(pan)
+    pantilthat.tilt(tilt)
     PID = spawn_python_process(os.path.join(currDir, 'pycam.py'))
 
     message = ('Successfully panned to {0} and tilted to {1}. Spawned new '
-                'process - PID {2}'.format(tilt, pan, PID))
+                'process - PID {2}'.format(pan, tilt, PID))
     return message
 
 @app.route('/web_rotate', methods=["GET", "POST"])
 def web_rotate():
     rotate = request.args.get('rotate')
     action = {
-        'L': ('tilt', 5),
-        'R': ('tilt', -5),
-        'U': ('pan', -5),
-        'D': ('pan', 5)
+        'L': ('pan', 5),
+        'R': ('pan', -5),
+        'U': ('tilt', -5),
+        'D': ('tilt', 5)
         }
 
     if rotate in action.keys():
