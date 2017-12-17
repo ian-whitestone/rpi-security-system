@@ -5,6 +5,7 @@ import os
 import pantilthat
 
 from app import app
+import subprocess
 from .utils import read_yaml, spawn_python_process, check_process, \
                     latest_file, slack_upload, kill_process
 
@@ -65,9 +66,25 @@ def on():
     else:
         return 'PiCam is already ON'
 
+def turn_off_pycam():
+    global PID
+
+    if PID is not None:
+        if check_process(PID) == False:
+            return 'PiCam is already OFF'
+
+        killed = kill_process(PID)
+        if killed:
+            message = 'Successfully killed {0}'.format(PID)
+            PID = None
+            return message
+        else:
+            return 'Failed to kill process {0}'.format(PID)
+    else:
+        return 'PiCam is already OFF'
+
 @app.route('/off', methods=["GET", "POST"])
 def off():
-    global PID
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
@@ -75,29 +92,43 @@ def off():
     if data['user_id'] != CONF['ian_uid']:
         return 'No access to the OFF command'
 
-    if PID is not None:
-        if check_process(PID) == False:
-            return 'PiCam is already OFF'
-        try:
-            int(data['text'])
-        except ValueError:
-            return 'Must supply the integer PID'
+    return turn_off_pycam()
 
-        if int(data['text']) != PID:
-            return 'Invalid PID to kill! Type {0} to confirm kill'.format(PID)
-        else: #TODO refactor as this is used below
-            killed = kill_process(PID)
-            if killed:
-                message = 'Successfully killed {0}'.format(PID)
-                PID = None
-                return message
-            else:
-                return 'Failed to kill process {0}'.format(PID)
-    else:
-        return 'PiCam is already OFF'
 
-    log.info('OFF slack command received with data: %s' % data)
-    text = data['text']
+@app.route('/stream_on', methods=["GET", "POST"])
+def stream_on():
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    if data['user_id'] != CONF['ian_uid']:
+        return 'No access to the Stream ON command'
+
+    turn_off_pycam()
+    pwd = 'changeme'
+    cmd = ["uv4l", "-nopreview", "--auto-video_nr", "--driver", "raspicam",
+      "--encoding", "mjpeg", "--vflip", "yes", "--hflip", "yes", "--width", "640",
+      "--height", "480", "--framerate", "20", "--server-option", "'--port=9090'",
+      "--server-option", "'--max-queued-connections=30'",
+      "--server-option", "'--max-streams=25'",
+      "--server-option", "'--max-threads=29'"
+      "--server-option", "'--user-password={0}'".format(pwd),
+      "--server-option", "'--admin-password={0}'".format(pwd)
+      ]
+    subprocess.Popen(cmd)
+    return "Started video stream with password: {0}".format(pwd)
+
+@app.route('/stream_off', methods=["GET", "POST"])
+def stream_off():
+    data = _parse_slash_post(request.form)
+    if data == False:
+        return 'Error'
+
+    if data['user_id'] != CONF['ian_uid']:
+        return 'No access to the Stream OFF command'
+
+    subprocess.Popen(['pkill', 'uv4l'])
+    return "Successfully killed uv4l stream"
 
 @app.route('/status', methods=["GET", "POST"])
 def status():
@@ -118,8 +149,6 @@ def status():
 
 @app.route('/rotate', methods=["GET", "POST"])
 def rotate():
-    global PID
-
     data = _parse_slash_post(request.form)
     if data == False:
         return 'Error'
@@ -135,10 +164,7 @@ def rotate():
     except ValueError:
         return 'Did not receive integer arguments'
 
-    if PID is not None:
-        killed = kill_process(PID)
-        if killed:
-            PID = None
+    turn_off_pycam()
 
     pantilthat.tilt(tilt)
     pantilthat.pan(pan)
