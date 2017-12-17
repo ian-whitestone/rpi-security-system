@@ -5,11 +5,9 @@ import os
 import pantilthat
 
 from app import app
-from .logger import create_logger
 from .utils import read_yaml, spawn_python_process, check_process, \
                     latest_file, slack_upload, kill_process
 
-log = create_logger(__name__, log_level='DEBUG')
 
 currDir = os.path.dirname(__file__)
 imgsDir = os.path.join(currDir, 'imgs')

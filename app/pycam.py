@@ -1,25 +1,40 @@
+import logging
+import os
+from datetime import datetime, timedelta
+
+#### Directory Setup
+currDir = os.path.dirname(__file__)
+CONF = read_yaml(os.path.join(currDir,'config.yml'))
+IMG_PATH = os.path.join(currDir, 'imgs')
+
+#### Logging Setup
+log_base_file = datetime.now().strftime("%Y-%m-%d-%H:%M")
+log_file = os.path.join(currDir, 'logs', log_base_file)
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+
+handler = logging.FileHandler(log_file)
+
+# create a logging format
+log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+formatter = logging.Formatter(log_format)
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+log.addHandler(handler)
+
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import argparse
 import warnings
-from datetime import datetime, timedelta
+
 import imutils
 import time
 import cv2
-import os
 
-from logger import create_logger
 from utils import read_yaml, slack_post, slack_upload
 
-currDir = os.path.dirname(__file__)
-
-log_base_file = datetime.now().strftime("%Y-%m-%d-%H:%M")
-log_file = os.path.join(currDir, 'logs', log_base_file)
-log = create_logger(__name__, log_level='DEBUG', log_filename=log_file)
-
-print(os.path.join(currDir,'config.yml'))
-CONF = read_yaml(os.path.join(currDir,'config.yml'))
-IMG_PATH = os.path.join(currDir, 'imgs')
 
 
 class PiCam():
@@ -42,9 +57,9 @@ class PiCam():
         self.camera = PiCamera()
         self.camera.resolution = tuple(self.resolution)
         self.camera.framerate = self.fps
-        self.camera.vflip = True
-        self.camera.hflip = True
-        
+        self.camera.vflip = CONF['vflip']
+        self.camera.hflip = CONF['hflip']
+
     def start_stream(self):
         self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
         log.info('Warming up camera')

@@ -10,13 +10,9 @@ import psutil
 import subprocess, signal
 import time
 from slackclient import SlackClient
+import logging
 
-try:
-    from .logger import create_logger
-except:
-    from logger import create_logger
-
-log = create_logger(__name__, log_level='DEBUG')
+log = logging.getLogger(__name__)
 
 
 def read_yaml(yaml_file):
