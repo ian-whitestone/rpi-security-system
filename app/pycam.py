@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 #### Directory Setup
 currDir = os.path.dirname(__file__)
-CONF = read_yaml(os.path.join(currDir,'config.yml'))
 IMG_PATH = os.path.join(currDir, 'imgs')
 
 #### Logging Setup
@@ -35,6 +34,7 @@ import cv2
 
 from utils import read_yaml, slack_post, slack_upload
 
+CONF = read_yaml(os.path.join(currDir,'config.yml'))
 
 
 class PiCam():
