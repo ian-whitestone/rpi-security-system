@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from datetime import datetime, timedelta
 
 #### Directory Setup
@@ -7,21 +8,27 @@ currDir = os.path.dirname(__file__)
 IMG_PATH = os.path.join(currDir, 'imgs')
 
 #### Logging Setup
-log_base_file = datetime.now().strftime("%Y-%m-%d-%H:%M")
+log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
 log_file = os.path.join(currDir, 'logs', log_base_file)
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
-handler = logging.FileHandler(log_file)
+## Define Handlers
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
 
 # create a logging format
 log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 formatter = logging.Formatter(log_format)
-handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 
 # add the handlers to the logger
-log.addHandler(handler)
+log.addHandler(file_handler)
+log.addHandler(console_handler)
 
 from picamera.array import PiRGBArray
 from picamera import PiCamera
@@ -54,11 +61,14 @@ class PiCam():
 
     def _init_camera(self):
         log.info('Initializing PiCamera')
-        self.camera = PiCamera()
-        self.camera.resolution = tuple(self.resolution)
-        self.camera.framerate = self.fps
-        self.camera.vflip = CONF['vflip']
-        self.camera.hflip = CONF['hflip']
+        try:
+            self.camera = PiCamera()
+            self.camera.resolution = tuple(self.resolution)
+            self.camera.framerate = self.fps
+            self.camera.vflip = CONF['vflip']
+            self.camera.hflip = CONF['hflip']
+        except Exception:
+            log.exception("Unable to initialize camera due to error:")
 
     def start_stream(self):
         self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
