@@ -163,7 +163,7 @@ def web_rotate():
     if rotate in action.keys():
         move = action[rotate]
         getattr(pantilthat, move[0])(move[1])
-    return
+    return "Success"
 
 def _validate_slack(token):
         # ============ Slack Token Verification =========== #
