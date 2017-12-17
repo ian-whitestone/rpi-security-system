@@ -33,3 +33,9 @@ min_area: 5000
 
 # number of pixels in the frame
 frame_width: 500
+
+# Vertically flip the camera
+vflip: True
+
+# Horizontally flip the camera
+hflip: True
