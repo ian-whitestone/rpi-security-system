@@ -167,11 +167,11 @@ def rotate():
                 'process - PID {2}'.format(pan, tilt, PID))
     return message
 
-def get_pan():
-    return panner.get_pan()
-
 def get_tilt():
-    return panner.get_pan()
+    return pantilthat.get_tilt()
+
+def get_pan():
+    return pantilthat.get_pan()
 
 @app.route('/current_position', methods=["GET", "POST"])
 def current_position():
