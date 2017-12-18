@@ -167,14 +167,26 @@ def rotate():
                 'process - PID {2}'.format(pan, tilt, PID))
     return message
 
+def get_pan():
+    return pantilthat.get_pan()
+
+def get_tilt():
+    return pantilthat.get_tilt()
+
+@app.route('/current_position', methods=["GET", "POST"])
+def current_position():
+    return 'Panned to {0}. Tilted to {1}'.format(get_pan(), get_tilt())
+
 @app.route('/web_rotate', methods=["GET", "POST"])
 def web_rotate():
+    pan = get_pan()
+    tilt = get_tilt()
     rotate = request.args.get('rotate')
     action = {
-        'L': ('pan', 5),
-        'R': ('pan', -5),
-        'U': ('tilt', -5),
-        'D': ('tilt', 5)
+        'L': ('pan', pan + 5),
+        'R': ('pan', pan + -5),
+        'U': ('tilt', tilt + -5),
+        'D': ('tilt', tilt + 5)
         }
 
     if rotate in action.keys():
