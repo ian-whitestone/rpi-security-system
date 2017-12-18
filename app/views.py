@@ -183,10 +183,10 @@ def web_rotate():
     tilt = get_tilt()
     rotate = request.args.get('rotate')
     action = {
-        'L': ('pan', pan + 5),
-        'R': ('pan', pan + -5),
-        'U': ('tilt', tilt + -5),
-        'D': ('tilt', tilt + 5)
+        'L': ('pan', pan + 20),
+        'R': ('pan', pan + -20),
+        'U': ('tilt', tilt + -20),
+        'D': ('tilt', tilt + 20)
         }
 
     if rotate in action.keys():
