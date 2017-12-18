@@ -1,0 +1,5 @@
+uv4l -nopreview --auto-video_nr --driver raspicam --encoding mjpeg --vflip yes \
+      --hflip yes --width 640 --height 480 --framerate 20 --server-option \
+      '--port=9090' --server-option '--max-queued-connections=30' \
+      --server-option '--max-streams=25' --server-option '--max-threads=29' \
+      --server-option '--user-password='$1 --server-option '--admin-password='$1
