@@ -2,10 +2,11 @@ from flask import Flask, request, make_response, render_template
 import json
 from datetime import datetime
 import os
-import panner as pantilthat
-
-from app import app
+import random
 import subprocess
+
+import panner as pantilthat
+from app import app
 from .utils import read_yaml, spawn_python_process, check_process, \
                     latest_file, slack_upload, kill_process
 
@@ -105,16 +106,8 @@ def stream_on():
         return 'No access to the Stream ON command'
 
     turn_off_pycam()
-    pwd = 'changeme'
-    cmd = ["uv4l", "-nopreview", "--auto-video_nr", "--driver", "raspicam",
-      "--encoding", "mjpeg", "--vflip", "yes", "--hflip", "yes", "--width", "640",
-      "--height", "480", "--framerate", "20", "--server-option", "'--port=9090'",
-      "--server-option", "'--max-queued-connections=30'",
-      "--server-option", "'--max-streams=25'",
-      "--server-option", "'--max-threads=29'"
-      "--server-option", "'--user-password={0}'".format(pwd),
-      "--server-option", "'--admin-password={0}'".format(pwd)
-      ]
+    pwd = random.randint(1,10000)
+    cmd = ["bash", os.path.join(currDir, "stream.sh"), pwd]
     subprocess.Popen(cmd)
     return "Started video stream with password: {0}".format(pwd)
 
