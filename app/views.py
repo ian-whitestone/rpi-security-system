@@ -2,7 +2,7 @@ from flask import Flask, request, make_response, render_template
 import json
 from datetime import datetime
 import os
-import panner as pantilthat
+from app import panner as pantilthat
 
 from app import app
 import subprocess
