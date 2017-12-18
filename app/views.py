@@ -6,7 +6,6 @@ from app import panner as pantilthat
 import random
 import subprocess
 
-import panner as pantilthat
 from app import app
 from .utils import read_yaml, spawn_python_process, check_process, \
                     latest_file, slack_upload, kill_process
@@ -108,7 +107,7 @@ def stream_on():
 
     turn_off_pycam()
     pwd = random.randint(1,10000)
-    cmd = ["bash", os.path.join(currDir, "stream.sh"), pwd]
+    cmd = ["bash", os.path.join(currDir, "stream.sh"), str(pwd)]
     subprocess.Popen(cmd)
     return "Started video stream with password: {0}".format(pwd)
 
