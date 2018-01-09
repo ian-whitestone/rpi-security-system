@@ -118,4 +118,12 @@ with open('./myimage.tif', 'wb') as f:
 client.close()
 ```
 
-## Other
+## Setup Notes
+
+### Slack
+- Slack bot
+- Slack-cleaner setup with required roles/permissions
+
+### Router
+- Port forwarding (take screenshot)
+- DHCP lease times
