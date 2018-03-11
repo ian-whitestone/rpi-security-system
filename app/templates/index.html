@@ -5,33 +5,40 @@
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-  
+
 </head>
 <body>
 
 <h1>Hello world</h1>
 
-<div class="content" align="center">
+<div class="container">
 
-<div class="row">
-    <img src="http://72.141.82.234:9090/stream/video.mjpeg"></img>
+  <div class="row">
+    <center>
+      <a href="{{ url_for('video_feed') }}">
+        <img src="{{ url_for('video_feed') }}">
+      </a>
+    </center>
+  </div>
+
+  <div class="row" style="margin-top:1%">
+    <center>
+      <button type="button" class="btn btn-default" onclick="rotate('L')">
+        <span class="glyphicon glyphicon-arrow-left"></span>
+      </button>
+      <button type="button" class="btn btn-default" onclick="rotate('R')">
+        <span class="glyphicon glyphicon-arrow-right"></span>
+      </button>
+      <button type="button" class="btn btn-default" onclick="rotate('D')">
+        <span class="glyphicon glyphicon-arrow-down"></span>
+      </button>
+      <button type="button" class="btn btn-default" onclick="rotate('U')">
+        <span class="glyphicon glyphicon-arrow-up"></span>
+      </button>
+    </center>
+  </div>
 </div>
 
-<div class="row" style="margin-top:1%">
-  <button type="button" class="btn btn-default" onclick="rotate('L')">
-    <span class="glyphicon glyphicon-arrow-left"></span>
-  </button>
-  <button type="button" class="btn btn-default" onclick="rotate('R')">
-    <span class="glyphicon glyphicon-arrow-right"></span>
-  </button>
-  <button type="button" class="btn btn-default" onclick="rotate('D')">
-    <span class="glyphicon glyphicon-arrow-down"></span>
-  </button>
-  <button type="button" class="btn btn-default" onclick="rotate('U')">
-    <span class="glyphicon glyphicon-arrow-up"></span>
-  </button>
-</div>
-</div>
 </body>
 
 <script>

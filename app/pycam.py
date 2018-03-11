@@ -1,47 +1,24 @@
+"""
+Module with the core pycam process for motion detection.
+"""
 import logging
 import os
-import sys
+import time
 from datetime import datetime, timedelta
-
-#### Directory Setup
-currDir = os.path.dirname(__file__)
-IMG_PATH = os.path.join(currDir, 'imgs')
-
-#### Logging Setup
-log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
-log_file = os.path.join(currDir, 'logs', log_base_file)
-
-log = logging.getLogger(__name__)
-
-## Define Handlers
-file_handler = logging.FileHandler(log_file)
-file_handler.setLevel(logging.INFO)
-
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
-
-# create a logging format
-log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-formatter = logging.Formatter(log_format)
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-
-# add the handlers to the logger
-log.addHandler(file_handler)
-log.addHandler(console_handler)
 
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-import argparse
-import warnings
-
 import imutils
-import time
 import cv2
+import utils
 
-from utils import read_yaml, slack_post, slack_upload
+LOGGER = logging.getLogger(__name__)
+CURR_DIR = os.path.dirname(__file__)
+IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 
-CONF = read_yaml(os.path.join(currDir,'config.yml'))
+utils.pycam_logging(LOGGER)
+
+CONF = utils.read_yaml(os.path.join(CURR_DIR, 'config.yml'))
 
 
 class PiCam():
@@ -55,31 +32,41 @@ class PiCam():
         self.unocc_min_upload_seconds = CONF["unocc_min_upload_seconds"]
         self.min_motion_frames = CONF['min_motion_frames']
         self.frame_width = CONF['frame_width']
-        self.warmup_time = CONF["camera_warmup_time"]
         self.save_images = CONF['save_images']
         self._init_camera()
+        self._looper()
 
     def _init_camera(self):
-        log.info('Initializing PiCamera')
+        LOGGER.info('Initializing PiCamera')
         try:
             self.camera = PiCamera()
             self.camera.resolution = tuple(self.resolution)
             self.camera.framerate = self.fps
             self.camera.vflip = CONF['vflip']
             self.camera.hflip = CONF['hflip']
+            self.raw_capture = PiRGBArray(self.camera, size=tuple(self.resolution))
+            LOGGER.info('Warming up camera')
+            time.sleep(2.5)
         except Exception:
-            log.exception("Unable to initialize camera due to error:")
+            LOGGER.exception("Unable to initialize camera due to error:")
+
+    def looper():
+        """Main camera controller process that monitors the redis camera_status
+        variable to see if frames should be processed
+        """
+        LOGGER.info('Starting looper')
+        while True:
+            if utils.redis_get('camera_status'):
+                self._process_frames
+            else:
+
 
     def start_stream(self):
-        self.rawCapture = PiRGBArray(self.camera, size=tuple(self.resolution))
-        log.info('Warming up camera')
-        time.sleep(self.warmup_time)
+
         avg = None
         motionCounter = 0
-        lastOccUploaded = datetime.now() + timedelta(minutes=1) # 1 minute startup period
-        lastUnoccUploaded = datetime.now() - timedelta(minutes=10)
 
-        for f in self.camera.capture_continuous(self.rawCapture, format="bgr",
+        for f in self.camera.capture_continuous(self.raw_capture, format="bgr",
                                                 use_video_port=True):
             # grab the raw NumPy array representing the image and initialize
             # the timestamp and the occupied status to false
@@ -94,9 +81,9 @@ class PiCam():
 
             # if the average frame is None, initialize it
             if avg is None:
-                log.info("Starting background model...")
+                LOGGER.info("Starting background model...")
                 avg = gray.copy().astype("float")
-                self.rawCapture.truncate(0)
+                self.raw_capture.truncate(0)
                 continue
 
             # accumulate the weighted average between the current frame and
@@ -135,7 +122,7 @@ class PiCam():
                             cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
             if occupied:
-                log.debug('Room is occupied!')
+                LOGGER.debug('Room is occupied!')
                 # check to see if enough time has passed between uploads
                 elapsed = (timestamp - lastOccUploaded).seconds
                 if  elapsed >= self.occ_min_upload_seconds:
@@ -149,25 +136,25 @@ class PiCam():
                         lastOccUploaded = timestamp
                         motionCounter = 0
 
-                        slack_post('<PiCam> {0} : Room is occupied'.format(ts))
+                        utils.slack_post('<PiCam> {0} : Room is occupied'.format(ts))
                         if self.save_images:
-                            fpath = os.path.join(IMG_PATH, text + '_' + ts + '.jpg')
-                            log.info('Saving occupied image to %s' % fpath)
+                            fpath = os.path.join(IMG_DIR, text + '_' + ts + '.jpg')
+                            LOGGER.info('Saving occupied image to %s' % fpath)
                             cv2.imwrite(fpath, frame)
-                            log.info('Uploading to slack')
-                            slack_upload(fpath, title=fpath)
+                            LOGGER.info('Uploading to slack')
+                            utils.slack_upload(fpath, title=fpath)
             else:
                 motionCounter = 0
                 elapsed = (timestamp - lastUnoccUploaded).seconds
                 if  elapsed >= self.unocc_min_upload_seconds:
                     lastUnoccUploaded = timestamp
                     if self.save_images:
-                        fpath = os.path.join(IMG_PATH, text + '_' + ts + '.jpg')
-                        log.info('Saving unoccupied image to %s' % fpath)
+                        fpath = os.path.join(IMG_DIR, text + '_' + ts + '.jpg')
+                        LOGGER.info('Saving unoccupied image to %s' % fpath)
                         cv2.imwrite(fpath, frame)
 
             # clear the stream in preparation for the next frame
-            self.rawCapture.truncate(0)
+            self.raw_capture.truncate(0)
 
 if __name__ == '__main__':
     picam = PiCam()

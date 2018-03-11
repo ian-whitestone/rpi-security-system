@@ -127,3 +127,77 @@ client.close()
 ### Router
 - Port forwarding (take screenshot)
 - DHCP lease times
+
+
+
+## Wiring Notes
+
+GPIO4 --> temp sensor
+
+GPIO17 --> RF transmitter
+
+Turn kitchen light on:
+(cv) pi@raspberrypi:~/rpi-security-system/archive $ ./codesend 4478403 -p 0
+Sending Code: 4478403. PIN: 0. Pulse Length: 189
+
+Turn kitchen light off:
+(cv) pi@raspberrypi:~/rpi-security-system/archive $ ./codesend 4478412 -p 0
+Sending Code: 4478412. PIN: 0. Pulse Length: 189
+
+
+
+Light sensor Notes
+- GPIO27
+- http://www.uugear.com/portfolio/using-light-sensor-module-with-raspberry-pi/
+- *When the ambient light intensity is lower than the predefined threshold, the output signal is high. When the light intensity reaches or exceeds the threshold, the signal output is low.*
+    + i.e. no light --> output is 1
+
+```python
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(27, GPIO.IN)
+GPIO.input(27)
+```
+
+
+LED Setup
+
+- 390 Ohm Resistor
+    - Used this calculator: http://ledcalc.com/
+    - supply: 5V, drop: 2-2.2V , current: 8mA (these were on the LEd package)
+- Longer leg of LED is connected to power supply (GPIO)
+- Shorter leg is connectedt to ground
+
+```python
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(26, GPIO.OUT)
+# turn it on
+GPIO.output(26, GPIO.HIGH)
+# turn it off
+GPIO.output(26, GPIO.LOW)
+```
+
+PIR Motion Sensor
+
+```python
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(21, GPIO.IN)
+import time
+while True:
+    GPIO.input(21)
+    time.sleep(0.1)
+```
+
+Checking CPU Throttling:
+
+https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=152549
+
+```
+pi@raspberrypi:~ $ vcgencmd get_throttled
+throttled=0x50000
+```
+- I believe this outputs means: currently throttled due to low voltage since my temp is < 50 degC
+- Ref: https://github.com/raspberrypi/firmware/issues/615
+-
