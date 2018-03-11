@@ -126,31 +126,27 @@ def validate_slack(token):
     verification token in the request matches our app's settings
 
     Args:
-        token (TYPE): Description
+        token (str): Slack token
 
     Returns:
-        TYPE: Description
+        bool: Indicate whether token received matches known verification token
     """
     if CONF['rpi_cam_app']['verification_token'] != token:
         return False
     return True
 
 def parse_slash_post(form):
-    """Verifies a request came from slack and parses the form in the POST
-    request that comes from Slack when a custom slash command is used.
+    """Parses the Slack slash command data
 
     Args:
         form (ImmutableMultiDict): Info from the POST request, as an IMD object.
+
     Returns :
         data (dict): dictionary representation of the IMD if request was
             verified. Otherwise, returns False
     """
     raw_dict = form.to_dict(flat=False)
     data = {k:v[0] for k, v in raw_dict.items()}
-
-    if not validate_slack(data['token']):
-        return False
-
     return data
 
 def slack_post(message, channel=CONF['alerts_channel'],

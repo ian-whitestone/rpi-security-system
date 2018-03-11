@@ -7,12 +7,14 @@ import os
 import random
 import subprocess
 import logging
+from functools import wraps
 
 from flask import request, make_response, render_template, Response
 from app import panner as pantilthat
 from app import app
 from app import utils
 from app.camera import Camera
+
 
 logging.basicConfig(level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
@@ -21,7 +23,31 @@ IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 TEMPLATES_DIR = os.path.join(CURR_DIR, 'templates')
 CONF = utils.read_yaml(os.path.join(CURR_DIR, 'private.yml'))
 
+
+def slack_verification(user=None):
+    """Verify post request came from Slack by checking the token sent with the
+    request. Optionally verify that the request came from a specific user
+
+    Args:
+        user (str, optional): User ID to verify, defaults to None and does not
+            verify which user sent the request
+    """
+    def actual_decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            data = utils.parse_slash_post(request.form)
+            token = data.get('token', None)
+            if not utils.validate_slack(token):
+                return 'Un-authenticated'
+            if user:
+                if data.get('user_id', None) != user:
+                    return 'No access to the ON command'
+            return func(*args, **kwargs)
+        return wrapper
+    return actual_decorator
+
 @app.route('/initialize', methods=["POST"])
+@slack_verification(CONF['ian_uid'])
 def initialize():
     """Initialize the security system app
     """
@@ -36,6 +62,7 @@ def initialize():
     return "Initialization completed"
 
 @app.route('/hello', methods=["GET", "POST"])
+@slack_verification()
 def hello():
     """An example slash command function.
 
@@ -43,27 +70,17 @@ def hello():
         str: Response sent back to slack
     """
     data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
     LOGGER.info('hello slack command received with data: %s', data)
-    # text = data['text']
     return 'Hello {0}'.format(data['user_name'])
 
 @app.route('/pycam_on', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def pycam_on():
     """Turn on the pycam process.
 
     Returns:
         str: Response to slack
     """
-    data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
-
-    #TODO: turn into a decorator
-    if data['user_id'] != CONF['ian_uid']:
-        return 'No access to the ON command'
-
     if utils.redis_get('camera_status'):
         response = 'Pycam is already running'
     else:
@@ -72,23 +89,18 @@ def pycam_on():
     return response
 
 @app.route('/pycam_off', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def pycam_off():
     """Turn off the pycam process.
 
     Returns:
         str: Response to slack
     """
-    data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
-
-    if data['user_id'] != CONF['ian_uid']:
-        return 'No access to the OFF command'
-
     utils.redis_set('camera_status', False)
     return "Pycam has been turned off"
 
 @app.route('/notifications_off', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def notifications_off():
     """Disable motion detected notifications
 
@@ -99,6 +111,7 @@ def notifications_off():
     return "Notications have been disabled"
 
 @app.route('/notifications_on', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def notifications_on():
     """Enable motion detected notifications
 
@@ -109,16 +122,13 @@ def notifications_on():
     return "Notications have been enable"
 
 @app.route('/status', methods=["GET", "POST"])
+@slack_verification()
 def status():
     """Get the status of the pycam process.
 
     Returns:
         str: Response to slack
     """
-    data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
-
     if utils.redis_get('camera_status'):
         response = "Pycam process is running"
     else:
@@ -126,6 +136,7 @@ def status():
     return response
 
 @app.route('/rotate', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def rotate():
     """Rotate the camera
 
@@ -133,9 +144,6 @@ def rotate():
         str: Response to slack
     """
     data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
-
     args = data['text'].split()
 
     if len(args) != 2:
@@ -191,8 +199,8 @@ def web_rotate():
     return "Success"
 
 
-
 @app.route("/last_image", methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
 def last_image():
     """Return the last image taken, optionally filtering for the last occupied
     or unnoccupied image
@@ -201,9 +209,6 @@ def last_image():
         str: Response to slack
     """
     data = utils.parse_slash_post(request.form)
-    if not data:
-        return 'Error'
-
     if data['text'] != '':
         text = data['text']
         if text.lower() == 'o' or text.lower() == 'u':
