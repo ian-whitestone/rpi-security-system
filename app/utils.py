@@ -68,14 +68,9 @@ def kitchen_light(signal):
     """Turn on/off kitchen light
 
     Args:
-        signal (int): Signal to send, 1 for on, 0 for off
+        signal (int): Signal to send
     """
-    if signal == 1:
-        pulse_code = 4478403
-    else:
-        pulse_code = 4478412
-
-    subprocess.check_output([CODESEND, '{} -p 0'.format(pulse_code)])
+    subprocess.check_output([CODESEND, '{} -p 0'.format(signal)])
     return
 
 def save_image_series(frames):

@@ -124,26 +124,44 @@ def notifications_on():
     utils.redis_set('camera_notifications', True)
     return "Notications have been enable"
 
-@app.route('/lights_on', methods=["POST"])
+@app.route('/light_on', methods=["POST"])
 @slack_verification()
-def lights_on():
+def light_on():
     """Turn on kitchen light
 
     Returns:
         str: Response to slack
     """
-    utils.kitchen_light(1)
+    data = utils.parse_slash_post(request.form)
+    light = data.get('text', '').strip().lower()
+    if light not in ['kitchen', 'bedroom', 'other']:
+        return 'Please specify kitchen, bedroom, or other'
+    code_map = {
+        'kitchen': 4478403,
+        'bedroom': 4470259,
+        'other': 4478723
+    }
+    utils.kitchen_light(code_map[light])
     return 'Kitchen light turned on'
 
-@app.route('/lights_off', methods=["POST"])
+@app.route('/light_off', methods=["POST"])
 @slack_verification()
-def lights_off():
+def light_off():
     """Turn on kitchen light
 
     Returns:
         str: Response to slack
     """
-    utils.kitchen_light(0)
+    data = utils.parse_slash_post(request.form)
+    light = data.get('text', '').strip().lower()
+    if light not in ['kitchen', 'bedroom', 'other']:
+        return 'Please specify kitchen, bedroom, or other'
+    code_map = {
+        'kitchen': 4478412,
+        'bedroom': 4478268,
+        'other': 4478732
+    }
+    utils.kitchen_light(code_map[light])
     return 'Kitchen light turned off'
 
 @app.route('/status', methods=["GET", "POST"])
