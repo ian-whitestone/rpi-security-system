@@ -54,10 +54,13 @@ def initialize():
     # set redis variables
     LOGGER.info('Initializing camera redis variables')
     utils.redis_set('camera_status', True)
-    utils.redis_set('camera_notifications', False)
+    utils.redis_set('camera_notifications', True)
 
     # kick of camera background process
     camera = Camera()
+
+    # kick off other background processes (image uploading, sensors etc.)
+    # TODO: implement
     LOGGER.info('Initialization complete')
     return "Initialization completed"
 

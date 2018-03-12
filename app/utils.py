@@ -12,6 +12,7 @@ import time
 from datetime import datetime
 import psutil
 
+import cv2
 from slackclient import SlackClient
 import yaml
 import redis
@@ -20,6 +21,7 @@ from app import panner as pantilthat
 
 LOGGER = logging.getLogger(__name__)
 CURR_DIR = os.path.dirname(__file__)
+IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 
 def read_yaml(yaml_file):
     """Read a yaml file.
@@ -44,34 +46,59 @@ REDIS_CONN = redis.StrictRedis(
     port=CONF['redis']['port'],
     db=CONF['redis']['db'],
     charset="utf-8",
-    decode_responses=True)
+    decode_responses=True
+)
 
-def pycam_logging(logger):
-    """Initialize the pycam logging setup
+def init_logging():
+    """Initialize the logging setup
 
-    Args:
-        logger (logging.Logger): logger object
     """
+    log_conf = read_yaml(os.path.join(CURR_DIR, 'logging.yml'))
     log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
     log_file = os.path.join(CURR_DIR, 'logs', log_base_file)
 
-    ## Define Handlers
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.DEBUG)
-
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
-
-    # create a logging format
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    formatter = logging.Formatter(log_format)
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-
-    # add the handlers to the logger
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+    log_conf['handlers']['file']['filename'] = log_file
+    logging.config.dictConfig(log_conf)
     return
+
+def save_image_series(frames):
+    """Save the series of images associated with a tagged event
+
+    Images will be saved in the images dir in the following format:
+        <occupied_ind>_<main_evt_ts>/<image_num>_<occupied_ind>_<ts>.jpg
+    Args:
+        frames (list): List of frames metadata
+    """
+    LOGGER.info('Saving image series')
+    ts_format = '%Y-%m-%d_%H:%M:%S.%f'
+    last_evt = frames[-1]
+    last_evt_ts = last_evt['ts'].strftime(ts_format)
+    evt_folder_name = '{}_{}'.format(last_evt['occupied'], last_evt_ts)
+    evt_folder = os.path.join(IMG_DIR, evt_folder_name)
+    if not os.path.exists(evt_folder):
+        os.makedirs(evt_folder)
+
+    for image_num, frame in frames:
+        evt_ts = frame['ts'].strftime(ts_format)
+        filename = '{}_{}_{}.jpg'.format(image_num, frame['occupied'], evt_ts)
+        filepath = os.path.join(evt_folder, filename)
+        cv2.imwrite(filepath, frame['frame'])
+
+    # publish event once it is completed
+    REDIS_CONN.publish('upload', evt_folder)
+    return
+
+def save_image(filepath, frame):
+    """Save an image
+
+    Args:
+        filepath (str): Filepath to save image to
+        frame (numpy.ndarray): Image to save
+    """
+    LOGGER.debug('Saving image to %s' % filepath)
+    cv2.imwrite(filepath, frame)
+    return
+
 
 def redis_get(key):
     """Fetch a key from redis
