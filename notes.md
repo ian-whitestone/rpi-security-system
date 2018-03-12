@@ -24,14 +24,6 @@ https://www.linux-projects.org/uv4l/installation/
 
 * Look into increasing FPS with [threading](https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/)
 
-* on/off slash commands
-* status slash command (return whether running or not)
-* picam slack updates
---> initial picture when starting up
---> post & upload picture when motion detected
-
-* picture slash command (return most recent image)
-
 
 ## Slack
 
@@ -200,4 +192,35 @@ throttled=0x50000
 ```
 - I believe this outputs means: currently throttled due to low voltage since my temp is < 50 degC
 - Ref: https://github.com/raspberrypi/firmware/issues/615
--
+
+
+TODO:
+
+1) Upload to S3:
+- publish event (with folder path) in redis to upload
+- have a script that subscribes to 'slack_upload' channel, and uploads events when they occur
+
+2) Slash command lights on/off
+
+3) Poll motion sensor redis feed & light sensor redis feed, turn on lights
+- leave them on for one minute then poll the motion sensor again
+- if we are home & light sensor is low & motion detected then turn ON
+
+4) Who is home
+- background script: constantly check who is home, update redis feed
+- add an redis variable camera_override (which will override the camera_status that gets updated by who_is_home)
+
+5) Turn on LED when camera process is running
+
+6) Sensors:
+- script 1: read motion sensor/ultrasonic status and publish to redis
+- script 2: upload motion sensor/ultrasonic data every X minutes
+
+7) Temperature/CPU Throttling:
+
+- slack commands for: vcgencmd measure_temp / vcgencmd get_throttled
+- optional: redis queue with temperature data
+
+
+
+
