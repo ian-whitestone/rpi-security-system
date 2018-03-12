@@ -124,6 +124,28 @@ def notifications_on():
     utils.redis_set('camera_notifications', True)
     return "Notications have been enable"
 
+@app.route('/lights_on', methods=["POST"])
+@slack_verification()
+def lights_on():
+    """Turn on kitchen light
+
+    Returns:
+        str: Response to slack
+    """
+    utils.kitchen_light(1)
+    return 'Kitchen light turned on'
+
+@app.route('/lights_off', methods=["POST"])
+@slack_verification()
+def lights_off():
+    """Turn on kitchen light
+
+    Returns:
+        str: Response to slack
+    """
+    utils.kitchen_light(0)
+    return 'Kitchen light turned off'
+
 @app.route('/status', methods=["GET", "POST"])
 @slack_verification()
 def status():

@@ -23,6 +23,8 @@ from app import panner as pantilthat
 LOGGER = logging.getLogger(__name__)
 CURR_DIR = os.path.dirname(__file__)
 IMG_DIR = os.path.join(CURR_DIR, 'imgs')
+SCRIPTS_DIR = os.path.join(CURR_DIR, 'scripts')
+CODESEND = os.path.join(SCRIPTS_DIR, 'codesend')
 
 def read_yaml(yaml_file):
     """Read a yaml file.
@@ -60,6 +62,20 @@ def init_logging():
 
     log_conf['handlers']['file']['filename'] = log_file
     logging.config.dictConfig(log_conf)
+    return
+
+def kitchen_light(signal):
+    """Turn on/off kitchen light
+
+    Args:
+        signal (int): Signal to send, 1 for on, 0 for off
+    """
+    if signal == 1:
+        pulse_code = 4478403
+    else:
+        pulse_code = 4478412
+
+    subprocess.check_output([CODESEND, '{} -p 0'.format(pulse_code)])
     return
 
 def save_image_series(frames):

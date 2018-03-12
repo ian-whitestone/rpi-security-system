@@ -197,8 +197,8 @@ throttled=0x50000
 TODO:
 
 1) Upload to S3:
-- publish event (with folder path) in redis to upload
-- have a script that subscribes to 'slack_upload' channel, and uploads events when they occur
+- utils.save_image_series will publish event (with folder path) in redis to upload
+- have a script that subscribes to 'upload' channel, and uploads image series to s3
 
 2) Slash command lights on/off
 
