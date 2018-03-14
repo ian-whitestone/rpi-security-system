@@ -184,10 +184,11 @@ class Camera(BaseCamera):
                                          response['thresh']), axis=1)
                 double = np.concatenate((top, bottom), axis=0)
                 ret, jpeg = cv2.imencode('.jpg', double)
-                yield jpeg.tobytes()
 
                 # reset stream for next frame
                 raw_capture.truncate(0)
+
+                yield jpeg.tobytes()
 
     def process_frame(self, frame, gray, avg, timestamp):
         """Process the latest image
