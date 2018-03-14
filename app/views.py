@@ -1,6 +1,7 @@
 """
 Flask views module
 """
+import time
 import json
 from datetime import datetime
 import os
@@ -198,12 +199,16 @@ def rotate():
     except ValueError:
         return 'Did not receive integer arguments'
 
-    utils.redis_set('camera_status', False)
+    curr_status = utils.redis_get('camera_status')
+    if curr_status:
+        utils.redis_set('camera_status', False)
+        time.sleep(1)
 
     pantilthat.pan(pan)
     pantilthat.tilt(tilt)
-
-    utils.redis_set('camera_status', True)
+    
+    if curr_status:
+        utils.redis_set('camera_status', True)
 
     response = 'Successfully panned to {0} and tilted to {1}'.format(pan, tilt)
     return response
@@ -255,7 +260,7 @@ def last_image():
     if data['text'] != '':
         text = data['text']
         if text.lower() == 'o' or text.lower() == 'u':
-            ftype = ('cccupied*' if text.lower() == 'o' else 'unoccupied*')
+            ftype = ('occupied*' if text.lower() == 'o' else 'unoccupied*')
         else:
             return "Please specify 'O', 'U' or don't pass in anything"
     else:
