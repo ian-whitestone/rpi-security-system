@@ -255,7 +255,7 @@ def last_image():
     if data['text'] != '':
         text = data['text']
         if text.lower() == 'o' or text.lower() == 'u':
-            ftype = ('Occupied*' if text.lower() == 'o' else 'Unoccupied*')
+            ftype = ('cccupied*' if text.lower() == 'o' else 'unoccupied*')
         else:
             return "Please specify 'O', 'U' or don't pass in anything"
     else:
