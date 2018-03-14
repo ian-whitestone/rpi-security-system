@@ -148,8 +148,9 @@ class Camera(BaseCamera):
     def frames(self):
         LOGGER.info('Starting camera thread')
         with picamera.PiCamera() as camera:
-            # let camera warm up
-            time.sleep(2)
+            LOGGER.debug('Warming up camera')
+            time.sleep(5)
+
             camera.vflip = self.vflip
             camera.hflip = self.hflip
             camera.resolution = tuple(self.resolution)
