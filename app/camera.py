@@ -147,9 +147,11 @@ class Camera(BaseCamera):
 
     def frames(self):
         LOGGER.info('Starting camera thread')
+        BaseCamera.last_occ_uploaded = datetime.now() + timedelta(minutes=1)
         with picamera.PiCamera() as camera:
-            # let camera warm up
+            LOGGER.debug('Warming up camera')
             time.sleep(2)
+
             camera.vflip = self.vflip
             camera.hflip = self.hflip
             camera.resolution = tuple(self.resolution)
@@ -184,10 +186,11 @@ class Camera(BaseCamera):
                                          response['thresh']), axis=1)
                 double = np.concatenate((top, bottom), axis=0)
                 ret, jpeg = cv2.imencode('.jpg', double)
-                yield jpeg.tobytes()
 
                 # reset stream for next frame
                 raw_capture.truncate(0)
+
+                yield jpeg.tobytes()
 
     def process_frame(self, frame, gray, avg, timestamp):
         """Process the latest image
@@ -291,11 +294,15 @@ class Camera(BaseCamera):
             # check to see if enough time has passed between uploads
             elapsed = (timestamp - BaseCamera.last_occ_uploaded).seconds
             if elapsed >= self.occ_min_upload_seconds:
+                LOGGER.debug('occ_min_upload_seconds has passed, incrementing '
+                             'motion counter')
                 BaseCamera.motion_counter += 1
 
                 # check to see if the number of frames with consistent
                 # motion is high enough
                 if BaseCamera.motion_counter >= self.min_motion_frames:
+                    LOGGER.debug('%s consecutive motion frames detected',
+                                 self.min_motion_frames)
                     # update the last uploaded timestamp and reset the
                     # motion counter
                     BaseCamera.last_occ_uploaded = timestamp

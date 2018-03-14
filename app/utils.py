@@ -334,6 +334,7 @@ def latest_file(path, ftype='*'):
         path += '/'
 
     list_of_files = glob.glob(path + ftype) # all filetypes
+    list_of_files = [f for f in list_of_files if os.path.isfile(f)]
     if list_of_files:
         last_file = max(list_of_files, key=os.path.getctime)
     else:
