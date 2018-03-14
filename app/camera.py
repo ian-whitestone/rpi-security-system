@@ -292,10 +292,12 @@ class Camera(BaseCamera):
         if occupied:
             LOGGER.debug('Room is occupied!')
             # check to see if enough time has passed between uploads
+            future_check = timestamp > BaseCamera.last_occ_uploaded
             elapsed = (timestamp - BaseCamera.last_occ_uploaded).seconds
-            if elapsed >= self.occ_min_upload_seconds:
-                LOGGER.debug('occ_min_upload_seconds has passed, incrementing '
-                             'motion counter')
+            if elapsed >= self.occ_min_upload_seconds and future_check:
+                LOGGER.debug('%s secs have elasped since last motion. %s '
+                             'occ_min_upload_seconds has passed, incrementing '
+                             'motion counter', elapsed, self.occ_min_upload_seconds)
                 BaseCamera.motion_counter += 1
 
                 # check to see if the number of frames with consistent
