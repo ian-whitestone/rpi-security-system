@@ -14,6 +14,7 @@ from datetime import datetime
 import psutil
 
 import cv2
+import RPi.GPIO as GPIO
 from slackclient import SlackClient
 import yaml
 import redis
@@ -64,8 +65,21 @@ def init_logging():
     logging.config.dictConfig(log_conf)
     return
 
-def kitchen_light(signal):
-    """Turn on/off kitchen light
+def led(on):
+    """Turn led on/off
+
+    Args:
+        on (bool): True to turn on led, False to turn it off
+    """
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(26, GPIO.OUT)
+    if on:
+        GPIO.output(26, GPIO.HIGH)
+    else:
+       GPIO.output(26, GPIO.LOW)
+
+def codesend(signal):
+    """Turn on/off appliance
 
     Args:
         signal (int): Signal to send

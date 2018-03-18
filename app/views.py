@@ -56,7 +56,7 @@ def initialize():
     LOGGER.info('Initializing camera redis variables')
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
-
+    utils.led(True)
     # kick of camera background process
     camera = Camera()
 
@@ -89,6 +89,7 @@ def pycam_on():
         response = 'Pycam is already running'
     else:
         utils.redis_set('camera_status', True)
+        utils.led(True)
         response = "Pycam has been turned on"
     return response
 
@@ -101,6 +102,7 @@ def pycam_off():
         str: Response to slack
     """
     utils.redis_set('camera_status', False)
+    utils.led(False)
     return "Pycam has been turned off"
 
 @app.route('/notifications_off', methods=["GET", "POST"])
@@ -128,42 +130,48 @@ def notifications_on():
 @app.route('/light_on', methods=["POST"])
 @slack_verification()
 def light_on():
-    """Turn on kitchen light
+    """Turn on light
 
     Returns:
         str: Response to slack
     """
     data = utils.parse_slash_post(request.form)
     light = data.get('text', '').strip().lower()
-    if light not in ['kitchen', 'bedroom', 'other']:
-        return 'Please specify kitchen, bedroom, or other'
+    if light not in ['kitchen', 'bedroom', 'other', 'led']:
+        return 'Please specify kitchen, bedroom, led or other'
     code_map = {
         'kitchen': 4478403,
         'bedroom': 4470259,
         'other': 4478723
     }
-    utils.kitchen_light(code_map[light])
-    return 'Kitchen light turned on'
+    if light in ['kitchen', 'bedroom', 'other']:
+        utils.codesend(code_map[light])
+    else:
+        utils.led(True)
+    return 'Light {} turned on'.format(light)
 
 @app.route('/light_off', methods=["POST"])
 @slack_verification()
 def light_off():
-    """Turn on kitchen light
+    """Turn off light
 
     Returns:
         str: Response to slack
     """
     data = utils.parse_slash_post(request.form)
     light = data.get('text', '').strip().lower()
-    if light not in ['kitchen', 'bedroom', 'other']:
-        return 'Please specify kitchen, bedroom, or other'
+    if light not in ['kitchen', 'bedroom', 'other', 'led']:
+        return 'Please specify kitchen, bedroom, led or other'
     code_map = {
         'kitchen': 4478412,
         'bedroom': 4478268,
         'other': 4478732
     }
-    utils.kitchen_light(code_map[light])
-    return 'Kitchen light turned off'
+    if light in ['kitchen', 'bedroom', 'other']:
+        utils.codesend(code_map[light])
+    else:
+        utils.led(False)
+    return 'Light {} turned off'.format(light)
 
 @app.route('/status', methods=["GET", "POST"])
 @slack_verification()
@@ -206,7 +214,7 @@ def rotate():
 
     pantilthat.pan(pan)
     pantilthat.tilt(tilt)
-    
+
     if curr_status:
         utils.redis_set('camera_status', True)
 
