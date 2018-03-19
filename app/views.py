@@ -12,7 +12,7 @@ from functools import wraps
 
 from flask import request, make_response, render_template, Response
 from app import panner as pantilthat
-from app import app
+from app import main_app
 from app import utils
 from app.camera import Camera
 
@@ -47,7 +47,7 @@ def slack_verification(user=None):
         return wrapper
     return actual_decorator
 
-@app.route('/initialize', methods=["POST"])
+@main_app.route('/initialize', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def initialize():
     """Initialize the security system app
@@ -56,7 +56,7 @@ def initialize():
     LOGGER.info('Initializing camera redis variables')
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
-
+    utils.led(True)
     # kick of camera background process
     camera = Camera()
 
@@ -65,7 +65,7 @@ def initialize():
     LOGGER.info('Initialization complete')
     return "Initialization completed"
 
-@app.route('/hello', methods=["GET", "POST"])
+@main_app.route('/hello', methods=["GET", "POST"])
 @slack_verification()
 def hello():
     """An example slash command function.
@@ -77,7 +77,7 @@ def hello():
     LOGGER.info('hello slack command received with data: %s', data)
     return 'Hello {0}'.format(data['user_name'])
 
-@app.route('/pycam_on', methods=["GET", "POST"])
+@main_app.route('/pycam_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def pycam_on():
     """Turn on the pycam process.
@@ -93,7 +93,7 @@ def pycam_on():
         response = "Pycam has been turned on"
     return response
 
-@app.route('/pycam_off', methods=["GET", "POST"])
+@main_app.route('/pycam_off', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def pycam_off():
     """Turn off the pycam process.
@@ -105,7 +105,7 @@ def pycam_off():
     utils.led(False)
     return "Pycam has been turned off"
 
-@app.route('/notifications_off', methods=["GET", "POST"])
+@main_app.route('/notifications_off', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def notifications_off():
     """Disable motion detected notifications
@@ -116,7 +116,7 @@ def notifications_off():
     utils.redis_set('camera_notifications', False)
     return "Notications have been disabled"
 
-@app.route('/notifications_on', methods=["GET", "POST"])
+@main_app.route('/notifications_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def notifications_on():
     """Enable motion detected notifications
@@ -127,7 +127,7 @@ def notifications_on():
     utils.redis_set('camera_notifications', True)
     return "Notications have been enable"
 
-@app.route('/light_on', methods=["POST"])
+@main_app.route('/light_on', methods=["POST"])
 @slack_verification()
 def light_on():
     """Turn on light
@@ -150,7 +150,7 @@ def light_on():
         utils.led(True)
     return 'Light {} turned on'.format(light)
 
-@app.route('/light_off', methods=["POST"])
+@main_app.route('/light_off', methods=["POST"])
 @slack_verification()
 def light_off():
     """Turn off light
@@ -173,7 +173,7 @@ def light_off():
         utils.led(False)
     return 'Light {} turned off'.format(light)
 
-@app.route('/status', methods=["GET", "POST"])
+@main_app.route('/status', methods=["GET", "POST"])
 @slack_verification()
 def status():
     """Get the status of the pycam process.
@@ -187,7 +187,7 @@ def status():
         response = "Pycam process is not running"
     return response
 
-@app.route('/rotate', methods=["GET", "POST"])
+@main_app.route('/rotate', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def rotate():
     """Rotate the camera
@@ -222,7 +222,7 @@ def rotate():
     return response
 
 
-@app.route('/current_position', methods=["GET", "POST"])
+@main_app.route('/current_position', methods=["GET", "POST"])
 def current_position():
     """Get the current position of the camera.
 
@@ -232,7 +232,7 @@ def current_position():
     return 'Panned to {0}. Tilted to {1}'.format(utils.get_pan(),
                                                  utils.get_tilt())
 
-@app.route('/web_rotate', methods=["GET", "POST"])
+@main_app.route('/web_rotate', methods=["GET", "POST"])
 def web_rotate():
     """Rotate the camera for the live stream site
 
@@ -255,7 +255,7 @@ def web_rotate():
     return "Success"
 
 
-@app.route("/last_image", methods=["GET", "POST"])
+@main_app.route("/last_image", methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def last_image():
     """Return the last image taken, optionally filtering for the last occupied
@@ -291,14 +291,14 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/video_feed')
+@main_app.route('/video_feed')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     mimetype = 'multipart/x-mixed-replace; boundary=frame'
     return Response(gen(Camera()), mimetype=mimetype)
 
 
-@app.route('/')
+@main_app.route('/')
 def index():
     """Return the homepage html
 
@@ -308,7 +308,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route("/listening", methods=["GET", "POST"])
+@main_app.route("/listening", methods=["GET", "POST"])
 def hears():
     """
     This route listens for incoming events from Slack and uses the event
