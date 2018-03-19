@@ -4,14 +4,14 @@ Socket IO App
 Based off of: https://github.com/shanealynn/async_flask
 """
 
-from app import socket_app, socketio
+from data_feeds import socketio
 from flask_socketio import emit
 from flask import Flask, render_template
 from random import random
 from time import sleep
 from threading import Thread, Event
 
-thread1 = Thread()
+thread = Thread()
 
 class RandomThread(Thread):
     def __init__(self, channel):
@@ -40,15 +40,15 @@ class RandomThread(Thread):
 @socketio.on('connect', namespace='/test1')
 def connect():
     # need visibility of the global thread object
-    global thread1
+    global thread
     print('Client connected test1')
 
-    if not thread1.isAlive():
+    if not thread.isAlive():
         print ("Starting Thread")
-        thread1 = RandomThread('/test1')
-        thread1.start()
+        thread = RandomThread('/test1')
+        thread.start()
 
 @socketio.on('disconnect', namespace='/test1')
 def disconnect():
     print('Client disconnected test1')
-    thread2.stop()
+    thread.stop()

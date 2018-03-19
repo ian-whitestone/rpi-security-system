@@ -1,7 +1,7 @@
 // source 1: https://bost.ocks.org/mike/path/
 // source 2: https://github.com/shanealynn/async_flask
 $(document).ready( function hello() {
-        var socket_url = 'http://' + document.domain + ':52961' + '/test1'
+        var socket_url = 'http://' + document.domain + ':8081' + '/test1'
         console.log(socket_url)
         var socket = io.connect(socket_url);
         var socket_number = 0;
