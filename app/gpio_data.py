@@ -39,9 +39,8 @@ class GPIOData(object):
                     if not utils.redis_get('gpio_status'):
                         LOGGER.info('Stopping GPIO data logging')
                         break
-                    self.measure_pir()
-                    self.measure_distance()
-
+                    self.redis.publish('pir', self.measure_pir())
+                    self.redis.publish('ultra', self.measure_distance())
                     time.sleep(0.2)
             else:
                 time.sleep(2)
@@ -58,7 +57,6 @@ class GPIOData(object):
     def measure_pir(self):
         return GPIO.input(self.pir)
 
-
     def measure_distance(self):
         # Send 10us pulse to trigger
         GPIO.output(self.ultra_trig, True)
@@ -67,17 +65,17 @@ class GPIOData(object):
 
         loop_start = time.time()
         start = time.time()
-        while GPIO.input(self.ultra_echo)==0 and \
+        while GPIO.input(self.ultra_echo) == 0 and \
             (time.time() - loop_start) < 15:
-          start = time.time()
+            start = time.time()
 
         stop = time.time()
-        while GPIO.input(self.ultra_echo)==1 and \
+        while GPIO.input(self.ultra_echo) == 1 and \
             (time.time() - loop_start) < 15:
-          stop = time.time()
+            stop = time.time()
 
         # if the signal was "timing out", return a bad value
-        if (time.time() - loop_start) >=15:
+        if (time.time() - loop_start) >= 15:
             return -999
 
         # Calculate pulse length
