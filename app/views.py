@@ -15,7 +15,7 @@ from app import panner as pantilthat
 from app import app
 from app import utils
 from app.camera import Camera
-
+from app.gpio_data import GPIOData
 
 logging.basicConfig(level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
@@ -56,9 +56,15 @@ def initialize():
     LOGGER.info('Initializing camera redis variables')
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
+    utils.redis_set('save_images', True)
     utils.led(True)
     # kick of camera background process
     camera = Camera()
+
+    LOGGER.info('Initializing GPIO redis variables')
+    utils.redis_set('gpio_status', True)
+    # kick of GPIO background process
+    gpio = GPIOData()
 
     # kick off other background processes (image uploading, sensors etc.)
     # TODO: implement
@@ -104,6 +110,54 @@ def pycam_off():
     utils.redis_set('camera_status', False)
     utils.led(False)
     return "Pycam has been turned off"
+
+@app.route('/gpio_on', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def gpio_on():
+    """Turn on the gpio data recording process.
+
+    Returns:
+        str: Response to slack
+    """
+    if utils.redis_get('gpio_status'):
+        response = 'GPIO data is already running'
+    else:
+        utils.redis_set('gpio_status', True)
+        response = "GPIO data has been turned on"
+    return response
+
+@app.route('/gpio_off', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def gpio_off():
+    """Turn off the gpio data recording process.
+
+    Returns:
+        str: Response to slack
+    """
+    utils.redis_set('gpio_status', False)
+    return "GPIO data has been turned off"
+
+@app.route('/save_images_on', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def save_images_on():
+    """Turn on the image saving process.
+
+    Returns:
+        str: Response to slack
+    """
+    utils.redis_set('save_images', True)
+    return "Image saving been turned on"
+
+@app.route('/save_images_off', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def save_images_off():
+    """Turn off the image saving process.
+
+    Returns:
+        str: Response to slack
+    """
+    utils.redis_set('save_images', False)
+    return "Image saving been turned off"
 
 @app.route('/notifications_off', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
@@ -298,7 +352,7 @@ def video_feed():
     return Response(gen(Camera()), mimetype=mimetype)
 
 
-@app.route('/')
+@app.route('/raspberries')
 def index():
     """Return the homepage html
 

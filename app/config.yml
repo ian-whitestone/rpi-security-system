@@ -27,9 +27,6 @@ ksize: [21, 21]
 
 ##### CAMERA SETTINGS #####
 
-# Whether images should be saved
-save_images: True
-
 # The width and height of the video frame from our Raspberry Pi camera
 resolution: [640, 480]
 

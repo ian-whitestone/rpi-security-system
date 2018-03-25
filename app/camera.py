@@ -136,7 +136,6 @@ class Camera(BaseCamera):
         self.unocc_min_upload_seconds = CONF["unocc_min_upload_seconds"]
         self.min_motion_frames = CONF['min_motion_frames']
         self.frame_width = CONF['frame_width']
-        self.save_images = CONF['save_images']
         self.vflip = CONF['vflip']
         self.hflip = CONF['hflip']
         self.alpha = CONF['alpha']
@@ -297,7 +296,8 @@ class Camera(BaseCamera):
             if elapsed >= self.occ_min_upload_seconds and future_check:
                 LOGGER.debug('%s secs have elasped since last motion. %s '
                              'occ_min_upload_seconds has passed, incrementing '
-                             'motion counter', elapsed, self.occ_min_upload_seconds)
+                             'motion counter', elapsed,
+                             self.occ_min_upload_seconds)
                 BaseCamera.motion_counter += 1
 
                 # check to see if the number of frames with consistent
@@ -310,7 +310,7 @@ class Camera(BaseCamera):
                     BaseCamera.last_occ_uploaded = timestamp
                     BaseCamera.motion_counter = 0
 
-                    if self.save_images:
+                    if utils.redis_get('save_images'):
                         utils.save_image(filepath, frame)
                         write_thread = threading.Thread(
                             target=utils.save_image_series,
@@ -328,7 +328,7 @@ class Camera(BaseCamera):
             elapsed = (timestamp - BaseCamera.last_unocc_uploaded).seconds
             if elapsed >= self.unocc_min_upload_seconds:
                 BaseCamera.last_unocc_uploaded = timestamp
-                if self.save_images:
+                if utils.redis_get('save_images'):
                     utils.save_image(filepath, frame)
                     write_thread = threading.Thread(
                         target=utils.save_image_series,
