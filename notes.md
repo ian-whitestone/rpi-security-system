@@ -125,8 +125,11 @@ client.close()
 ## Wiring Notes
 
 GPIO4 --> temp sensor
-
 GPIO17 --> RF transmitter
+GPIO27 --> Light sensor
+GPIO26 --> LED
+GPIO13 --> Ultrasonic Trigger
+GPIO19 --> Ultrasonic Echo
 
 Turn kitchen light on:
 (cv) pi@raspberrypi:~/rpi-security-system/archive $ ./codesend 4478403 -p 0
