@@ -102,7 +102,10 @@ class RedisListener(SocketEmitter):
         )
 
     def generate(self):
-        for item in self.pubsub.listen():
+        for i, item in enumerate(self.pubsub.listen()):
+            if i == 0:
+                continue
+
             if not self.is_running:
                 self.pubsub.unsubscribe()
                 print(self, "unsubscribed and finished")
@@ -126,9 +129,9 @@ def connect():
 
     if not thread.isAlive():
         print ("Starting Thread")
-        # thread = RedisListener(delay=2.5, socket_channel='/test1',
-        #                        redis_channel='test')
-        thread = Temp(delay=2.5, channel='/test1')
+        thread = RedisListener(delay=0, socket_channel='/test1',
+                               redis_channel='pir')
+        # thread = Temp(delay=2.5, channel='/test1')
         thread.start()
 
 @socketio.on('disconnect', namespace='/test1')
