@@ -137,6 +137,32 @@ def gpio_off():
     utils.redis_set('gpio_status', False)
     return "GPIO data has been turned off"
 
+@app.route('/auto_detect_on', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def auto_detect_on():
+    """Turn on the who is home auto detection process.
+
+    Returns:
+        str: Response to slack
+    """
+    if utils.redis_get('auto_detect_status'):
+        response = 'Auto detect is already running'
+    else:
+        utils.redis_set('auto_detect_status', True)
+        response = "Auto detect has been turned on"
+    return response
+
+@app.route('/auto_detect_off', methods=["GET", "POST"])
+@slack_verification(CONF['ian_uid'])
+def auto_detect_off():
+    """Turn off the who is home auto detection process.
+
+    Returns:
+        str: Response to slack
+    """
+    utils.redis_set('auto_detect_status', False)
+    return "Auto detect has been turned off"
+
 @app.route('/save_images_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def save_images_on():

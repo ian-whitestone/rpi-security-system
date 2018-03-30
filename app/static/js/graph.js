@@ -26,7 +26,7 @@ $(document).ready( function hello() {
             .range([height, 0]);
 
         x.domain(d3.extent(data, function(d) { return d.date; }));
-        y.domain([0, d3.max(data, function(d) { return d.reading; })]);
+        y.domain([0, d3.max(data, function(d) { return d.reading; })*1.2]);
 
         var line = d3.line()
             .x(function(d) { return x(d.date); })
@@ -77,7 +77,7 @@ $(document).ready( function hello() {
             min_time = d3.min(data, function(d) { return d.date; })
             max_time = d3.max(data, function(d) { return d.date; }) + 15*1000
             x.domain([min_time, max_time]);
-            y.domain([0, d3.max(data, function(d) { return d.reading; })]);
+            y.domain([0, d3.max(data, function(d) { return d.reading; })*1.2]);
 
             // pop the oldest data point
             if (now - data[0].date >= history) {

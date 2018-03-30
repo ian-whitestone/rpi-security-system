@@ -24,17 +24,21 @@ class GPIOData(object):
         """Start the background thread if it isn't running yet."""
         LOGGER.info("Initializing GPIO data class")
         if GPIOData.thread is None:
+            LOGGER.info('Starting GPIO thread')
             self.redis = REDIS_CONN
-
             # start thread
             GPIOData.thread = threading.Thread(target=self._thread,
                                                daemon=True)
             GPIOData.thread.start()
+        else:
+            LOGGER.info('GPIO thread has already been started')
 
     def _thread(self):
         while True:
             self.gpio_setup()
             if utils.redis_get('gpio_status'):
+                LOGGER.info('Testing PIR: %s', self.measure_pir())
+                LOGGER.info('Testing ULTRa: %s', self.measure_distance())
                 while True:
                     if not utils.redis_get('gpio_status'):
                         LOGGER.info('Stopping GPIO data logging')
