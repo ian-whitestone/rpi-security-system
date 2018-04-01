@@ -11,8 +11,10 @@ import ast
 import signal
 import time
 from datetime import datetime
-import psutil
+import shutil
 
+import psutil
+import boto3
 import cv2
 import RPi.GPIO as GPIO
 from slackclient import SlackClient
@@ -355,3 +357,52 @@ def latest_file(path, ftype='*'):
         LOGGER.error('No files in directory')
 
     return last_file
+
+def search_path(path, filetypes=None):
+    """Recursively search a path, optionally matching specific filetypes, and
+    return all filenames.
+
+    Args:
+        path (str): Path to search
+        filetypes (list, optional): Filetypes to return
+
+    Returns:
+        files (list): List of files
+    """
+    files = []
+    for (dirpath, dirnames, filenames) in os.walk(path):
+        if filetypes:
+            files.extend([file for file in filenames
+                          if file.endswith(tuple(filetypes))])
+        else:
+            files.extend(filenames)
+    return files
+
+def upload_to_s3(s3_bucket, local, key):
+    """Upload a list of files to S3.
+
+    Args:
+        s3_bucket (str): Name of the S3 bucket.
+        files (list): List of files to upload
+    """
+    LOGGER.info("Attempting to load %s to s3 bucket: s3://%s/%s", local,
+                s3_bucket, key)
+    s3 = boto3.resource('s3')
+    data = open(local, 'rb')
+    s3.Bucket(s3_bucket).put_object(
+        Key=key, Body=data, ServerSideEncryption='AES256')
+
+def clean_dir(path):
+    """Clear folders and files in a specified path
+
+    Args:
+        path (str): Path to clean files/folders
+    """
+    for file in os.listdir(path):
+        full_path = os.path.join(path, file)
+        if os.path.isdir(full_path):
+            shutil.rmtree(full_path)
+            assert not os.path.isdir(full_path)
+        elif os.path.isfile(full_path):
+            os.remove(full_path)
+            assert not os.path.isfile(full_path)
