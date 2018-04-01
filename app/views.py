@@ -10,7 +10,7 @@ import subprocess
 import logging
 from functools import wraps
 
-from flask import request, make_response, render_template, Response
+from flask import request, make_response, render_template, Response, jsonify
 from app import panner as pantilthat
 from app import app
 from app import utils
@@ -54,6 +54,8 @@ def initialize():
     """
     # set redis variables
     LOGGER.info('Initializing camera redis variables')
+    pantilthat.pan(40)
+    pantilthat.tilt(10)
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
     utils.redis_set('save_images', True)
@@ -82,6 +84,46 @@ def hello():
     data = utils.parse_slash_post(request.form)
     LOGGER.info('hello slack command received with data: %s', data)
     return 'Hello {0}'.format(data['user_name'])
+
+@app.route('/top', methods=["GET", "POST"])
+@slack_verification()
+def top():
+    with open('top.log', 'w') as outfile:
+      subprocess.call("top -n1 -b -c", shell=True, stdout=outfile)
+
+    with open('top.log', 'r') as f:
+        contents = "".join([next(f) for x in range(20)])
+    return contents
+
+@app.route('/status', methods=["GET", "POST"])
+@slack_verification()
+def status():
+    """Get the status of the current redis configuration and camera position
+
+    Returns:
+        str: Response to slack
+    """
+    summary = """**PI SUMMARY**:
+    pi_temperature: {}
+    camera_position: Panned to {}. Tilted to {}
+    camera_status: {}
+    camera_notifications: {}
+    save_images: {}
+    gpio_status: {}
+    auto_detect_status: {}
+    home: {}
+    """
+    return summary.format(
+        utils.measure_temp(),
+        utils.get_pan(),
+        utils.get_tilt(),
+        utils.redis_get('camera_status'),
+        utils.redis_get('camera_notifications'),
+        utils.redis_get('save_images'),
+        utils.redis_get('gpio_status'),
+        utils.redis_get('auto_detect_status'),
+        utils.redis_get('home')
+    )
 
 @app.route('/pycam_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
@@ -252,20 +294,6 @@ def light_off():
     else:
         utils.led(False)
     return 'Light {} turned off'.format(light)
-
-@app.route('/status', methods=["GET", "POST"])
-@slack_verification()
-def status():
-    """Get the status of the pycam process.
-
-    Returns:
-        str: Response to slack
-    """
-    if utils.redis_get('camera_status'):
-        response = "Pycam process is running"
-    else:
-        response = "Pycam process is not running"
-    return response
 
 @app.route('/rotate', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])

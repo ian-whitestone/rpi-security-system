@@ -16,7 +16,11 @@ def loop():
 
     images = utils.search_path(IMG_DIR, filetypes=['.jpg'])
     for img in images:
-        key = os.path.join(S3_IMG_PREFIX, img.split(IMG_DIR)[-1])
+        key = S3_IMG_PREFIX + img.split(IMG_DIR)[-1]
         utils.upload_to_s3(BUCKET, img, key)
         os.remove(img)
     time.sleep(60*5)
+
+
+if __name__ == '__main__':
+    loop()

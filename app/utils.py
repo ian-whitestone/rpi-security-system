@@ -112,8 +112,6 @@ def save_image_series(frames):
         filepath = os.path.join(evt_folder, filename)
         cv2.imwrite(filepath, frame['frame'])
 
-    # publish event once it is completed
-    REDIS_CONN.publish('upload', evt_folder)
     return
 
 def save_image(filepath, frame):
@@ -372,10 +370,10 @@ def search_path(path, filetypes=None):
     files = []
     for (dirpath, dirnames, filenames) in os.walk(path):
         if filetypes:
-            files.extend([file for file in filenames
+            files.extend([os.path.join(dirpath, file) for file in filenames
                           if file.endswith(tuple(filetypes))])
         else:
-            files.extend(filenames)
+            files.extend([os.path.join(dirpath, file) for file in filenames])
     return files
 
 def upload_to_s3(s3_bucket, local, key):
@@ -385,7 +383,7 @@ def upload_to_s3(s3_bucket, local, key):
         s3_bucket (str): Name of the S3 bucket.
         files (list): List of files to upload
     """
-    LOGGER.info("Attempting to load %s to s3 bucket: s3://%s/%s", local,
+    LOGGER.info("Attempting to load %s to s3 bucket: s3://%s, key: %s", local,
                 s3_bucket, key)
     s3 = boto3.resource('s3')
     data = open(local, 'rb')
@@ -406,3 +404,9 @@ def clean_dir(path):
         elif os.path.isfile(full_path):
             os.remove(full_path)
             assert not os.path.isfile(full_path)
+
+def measure_temp():
+    temp = os.popen("vcgencmd measure_temp").readline()
+    parsed_temp = temp.replace("temp=", "").split("'C")[0]
+    return float(parsed_temp)
+

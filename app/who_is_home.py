@@ -9,7 +9,7 @@ from app import utils
 
 LOGGER = logging.getLogger(__name__)
 CURR_DIR = os.path.dirname(__file__)
-CONF = utils.read_yaml(os.path.join(CURR_DIR, 'app', 'private.yml'))
+CONF = utils.read_yaml(os.path.join(CURR_DIR, 'private.yml'))
 ROUTER = CONF['router']
 
 USERNAME = ROUTER['user']
@@ -46,10 +46,12 @@ def loop():
             if connected_humans:
                 LOGGER.info('{} are connected. Turning off camera'
                        .format(connected_humans))
+                utils.redis_set('home', True)
                 utils.redis_set('camera_status', False)
                 time.sleep(60*5)
             else:
                 LOGGER.info('No humans are connected. ')
+                utils.redis_set('home', False)
                 utils.redis_set('camera_status', True)
                 # newly connected devices take 30 seconds to show up
                 time.sleep(30)
