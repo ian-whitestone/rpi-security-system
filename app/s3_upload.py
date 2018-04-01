@@ -19,6 +19,7 @@ def loop():
         key = S3_IMG_PREFIX + img.split(IMG_DIR)[-1]
         utils.upload_to_s3(BUCKET, img, key)
         os.remove(img)
+    utils.clean_dir(IMG_DIR, exclude=['.gitignore'])
     time.sleep(60*5)
 
 

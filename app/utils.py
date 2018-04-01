@@ -390,18 +390,22 @@ def upload_to_s3(s3_bucket, local, key):
     s3.Bucket(s3_bucket).put_object(
         Key=key, Body=data, ServerSideEncryption='AES256')
 
-def clean_dir(path):
+def clean_dir(path, exclude=None):
     """Clear folders and files in a specified path
 
     Args:
         path (str): Path to clean files/folders
+        exclude (list, optiona): Filenames to exclude from deletion
     """
+    if not exclude:
+        exclude = []
+
     for file in os.listdir(path):
         full_path = os.path.join(path, file)
         if os.path.isdir(full_path):
             shutil.rmtree(full_path)
             assert not os.path.isdir(full_path)
-        elif os.path.isfile(full_path):
+        elif os.path.isfile(full_path) and file not in exclude:
             os.remove(full_path)
             assert not os.path.isfile(full_path)
 
