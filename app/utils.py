@@ -202,6 +202,73 @@ def parse_slash_post(form):
     data = {k:v[0] for k, v in raw_dict.items()}
     return data
 
+def slack_post_interactive(response):
+    """Ingest the picture upload response and add a follow up message with
+    buttons to tag the image
+
+    Args:
+        response (dict): Slack response from the image upload
+    """
+    if response['ok']:
+        file_id = response['file']['id']
+        file_title = response['file']['title']
+        slack_client = SlackClient(CONF['app_token'])
+        response = slack_client.api_call(
+            "chat.postMessage",
+            as_user=True,
+            channel=CONF['alerts_channel'],
+            text='Tag Image {}'.format(file_title),
+            attachments= [{
+                    "text": "How should this image be tagged",
+                    "callback_id": "tag_image",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    'actions': [
+                        {
+                            "name": "occupied",
+                            "text": "Occupied",
+                            "type": "button",
+                            "style": "primary",
+                            "value": str({
+                                'occupied': True,
+                                'file_id': file_id,
+                                'file_title': file_title
+                            })
+                        },
+                        {
+                            "name": "unoccupied",
+                            "text": "Unoccupied",
+                            "type": "button",
+                            "style": "danger",
+                            "value": str({
+                                'occupied': False,
+                                'file_id': file_id,
+                                'file_title': file_title
+                            })
+                        }
+                    ]
+                }]
+            )
+
+    else:
+        LOGGER.error('Failed image upload %s', response)
+
+def slack_delete_file(file_id):
+    """Delete a file in slack
+
+    Args:
+        file_id (str): File to delete
+
+    Returns:
+        dict: Slack response object
+    """
+    slack_client = SlackClient(CONF['ian_token'])
+    response = slack_client.api_call(
+        'files.delete',
+        file=file_id
+    )
+    return response
+
 def slack_post(message, channel=CONF['alerts_channel'],
                token=CONF['bot_token']):
     """Post a message to a channel
@@ -239,6 +306,9 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
             private.yml
         token (str): Token to use with SlackClient. Defaults to bot_token
             specified in private.yml
+
+    Returns:
+        dict: Slack response object
     """
     if title is None:
         title = os.path.basename(fname)
@@ -251,10 +321,7 @@ def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
         title=title
         )
 
-    if response['ok']:
-        LOGGER.info('Uploaded succesfully')
-    else:
-        LOGGER.error('Unable to upload, response: %s', response)
+    return response
 
 def spawn_python_process(fname):
     """Spawn a python process.

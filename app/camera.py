@@ -321,8 +321,9 @@ class Camera(BaseCamera):
 
                     if utils.redis_get('camera_notifications'):
                         LOGGER.info('Uploading to slack')
-                        utils.slack_upload(filepath,
-                                           title=os.path.basename(filepath))
+                        response = utils.slack_upload(
+                            filepath, title=os.path.basename(filepath))
+                        utils.slack_post_interactive(response)
         else:
             BaseCamera.motion_counter = 0
             elapsed = (timestamp - BaseCamera.last_unocc_uploaded).seconds

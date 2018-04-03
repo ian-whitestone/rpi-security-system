@@ -56,6 +56,8 @@ def initialize():
     LOGGER.info('Initializing camera redis variables')
     pantilthat.pan(40)
     pantilthat.tilt(10)
+    utils.redis_set('home', False)
+    utils.redis_set('auto_detect_status', True)
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
     utils.redis_set('save_images', True)
@@ -124,6 +126,19 @@ def status():
         utils.redis_get('auto_detect_status'),
         utils.redis_get('home')
     )
+
+@app.route('/interactive', methods=["POST"])
+def interactive():
+    data = utils.parse_slash_post(request.form)
+
+    payload = json.loads((data['payload']))
+    action = payload['actions'][0]
+    action_value = eval(action['value'])
+    tag = action_value['occupied']
+    file_title = action_value['file_title']
+    # TODO: update database
+    utils.slack_delete_file(action_value['file_id'])
+    return 'Response for {} logged'.format(file_title)
 
 @app.route('/pycam_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])

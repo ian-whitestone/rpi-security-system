@@ -48,10 +48,12 @@ def loop():
                        .format(connected_humans))
                 utils.redis_set('home', True)
                 utils.redis_set('camera_status', False)
+                utils.led(False)
                 time.sleep(60*5)
             else:
                 LOGGER.info('No humans are connected. ')
                 utils.redis_set('home', False)
+                utils.led(True)
                 utils.redis_set('camera_status', True)
                 # newly connected devices take 30 seconds to show up
                 time.sleep(30)
