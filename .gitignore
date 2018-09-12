@@ -6,6 +6,7 @@ private.yml
 slack-test.py
 test*.py
 bootstrap/*
+*.mov
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
