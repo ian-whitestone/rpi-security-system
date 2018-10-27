@@ -10,43 +10,21 @@ import subprocess
 import ast
 import signal
 import time
-from datetime import datetime
 import shutil
 
 import psutil
 import boto3
-import cv2
-import RPi.GPIO as GPIO
 from slackclient import SlackClient
-import yaml
 import redis
-from app import panner as pantilthat
+import pantilthat
 
+try:
+    from app import config
+except:
+    import config
 
 LOGGER = logging.getLogger(__name__)
-CURR_DIR = os.path.dirname(__file__)
-IMG_DIR = os.path.join(CURR_DIR, 'imgs')
-SCRIPTS_DIR = os.path.join(CURR_DIR, 'scripts')
-CODESEND = os.path.join(SCRIPTS_DIR, 'codesend')
-
-def read_yaml(yaml_file):
-    """Read a yaml file.
-
-    Args:
-        yaml_file (str): Full path of the yaml file.
-
-    Returns:
-        data (dict): Dictionary of yaml_file contents. None is returned if an
-        error occurs while reading.
-    """
-
-    with open(yaml_file) as file_in:
-        data = yaml.safe_load(file_in)
-
-    return data
-
-CONF = read_yaml(os.path.join(CURR_DIR, 'private.yml'))
-
+CONF = config.load_private_config()
 REDIS_CONN = redis.StrictRedis(
     host=CONF['redis']['host'],
     port=CONF['redis']['port'],
@@ -54,77 +32,6 @@ REDIS_CONN = redis.StrictRedis(
     charset="utf-8",
     decode_responses=True
 )
-
-def init_logging():
-    """Initialize the logging setup
-
-    """
-    log_conf = read_yaml(os.path.join(CURR_DIR, 'logging.yml'))
-    log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
-    log_file = os.path.join(CURR_DIR, 'logs', log_base_file)
-
-    log_conf['handlers']['file']['filename'] = log_file
-    logging.config.dictConfig(log_conf)
-    return
-
-def led(on):
-    """Turn led on/off
-
-    Args:
-        on (bool): True to turn on led, False to turn it off
-    """
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(26, GPIO.OUT)
-    if on:
-        GPIO.output(26, GPIO.HIGH)
-    else:
-       GPIO.output(26, GPIO.LOW)
-
-def codesend(signal):
-    """Turn on/off appliance
-
-    Args:
-        signal (int): Signal to send
-    """
-    subprocess.check_output([CODESEND, '{} -p 0'.format(signal)])
-    return
-
-def save_image_series(frames):
-    """Save the series of images associated with a tagged event
-
-    Images will be saved in the images dir in the following format:
-        <occupied_ind>_<main_evt_ts>/<image_num>_<occupied_ind>_<ts>.jpg
-    Args:
-        frames (list): List of frames metadata
-    """
-    LOGGER.info('Saving image series')
-    ts_format = '%Y-%m-%d_%H:%M:%S.%f'
-    last_evt = frames[-1]
-    last_evt_ts = last_evt['ts'].strftime(ts_format)
-    evt_folder_name = '{}_{}'.format(last_evt['occupied'], last_evt_ts)
-    evt_folder = os.path.join(IMG_DIR, evt_folder_name)
-    if not os.path.exists(evt_folder):
-        os.makedirs(evt_folder)
-
-    for image_num, frame in enumerate(frames):
-        evt_ts = frame['ts'].strftime(ts_format)
-        filename = '{}_{}_{}.jpg'.format(image_num, frame['occupied'], evt_ts)
-        filepath = os.path.join(evt_folder, filename)
-        cv2.imwrite(filepath, frame['frame'])
-
-    return
-
-def save_image(filepath, frame):
-    """Save an image
-
-    Args:
-        filepath (str): Filepath to save image to
-        frame (numpy.ndarray): Image to save
-    """
-    LOGGER.debug('Saving image to %s' % filepath)
-    cv2.imwrite(filepath, frame)
-    return
-
 
 def redis_get(key):
     """Fetch a key from redis
@@ -155,8 +62,6 @@ def redis_set(key, value):
         value (): Value to be associated with key
     """
     REDIS_CONN.set(key, value)
-    return
-
 
 def get_tilt():
     """Get the current tilt value
