@@ -1,6 +1,5 @@
 """
 Main camera module; handles motion detection and returning frames to clients.
-
 Based off Miguel Grinberg's fantastic tutorial:
 https://blog.miguelgrinberg.com/post/flask-video-streaming-revisited
 """
@@ -27,7 +26,6 @@ IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 class CameraEvent(object):
     """An Event-like class that signals all active clients when a new frame is
     available.
-
     Taken directly from:
     https://github.com/miguelgrinberg/flask-video-streaming
     """
@@ -193,14 +191,12 @@ class Camera(BaseCamera):
 
     def process_frame(self, frame, gray, avg, timestamp):
         """Process the latest image
-
         Args:
             frame (numpy.ndarray): Original frame
             gray (numpy.ndarray): Grayscale, blurred frame
             avg (numpy.ndarray): Running average of the images
             timestamp (datetime.datetime): timestmap from when the frame was
                 fetched
-
         Returns:
             dict: Processed frame and occupied status
         """
@@ -256,7 +252,6 @@ class Camera(BaseCamera):
         """Save the frame in the frames collector. Store the last X frames
         as specified by frame_store_cnt. This image series is kept to tune
         the model/motion settings.
-
         Args:
             frame (numpy.ndarray): Original grayscale frame
             occupied (bool): Occupied indicator
@@ -275,7 +270,6 @@ class Camera(BaseCamera):
 
     def process_response(self, response):
         """Process the results from the last frame processing
-
         Args:
             response (dict): Response from the last frame processing
         """

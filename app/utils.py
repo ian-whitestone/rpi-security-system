@@ -480,4 +480,3 @@ def measure_temp():
     temp = os.popen("vcgencmd measure_temp").readline()
     parsed_temp = temp.replace("temp=", "").split("'C")[0]
     return float(parsed_temp)
-
