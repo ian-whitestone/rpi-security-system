@@ -1,0 +1,9 @@
+numpy
+picamera
+git+https://github.com/ian-whitestone/pantilt-hat.git
+requests
+flask
+psutil
+boto3
+slackclient
+redis
