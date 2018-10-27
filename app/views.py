@@ -264,56 +264,12 @@ def notifications_on():
     utils.redis_set('camera_notifications', True)
     return "Notications have been enable"
 
-@app.route('/light_on', methods=["POST"])
-@slack_verification()
-def light_on():
-    """Turn on light
-
-    Returns:
-        str: Response to slack
-    """
-    data = utils.parse_slash_post(request.form)
-    light = data.get('text', '').strip().lower()
-    if light not in ['kitchen', 'bedroom', 'other', 'led']:
-        return 'Please specify kitchen, bedroom, led or other'
-    code_map = {
-        'kitchen': 4478403,
-        'bedroom': 4470259,
-        'other': 4478723
-    }
-    if light in ['kitchen', 'bedroom', 'other']:
-        utils.codesend(code_map[light])
-    else:
-        utils.led(True)
-    return 'Light {} turned on'.format(light)
-
-@app.route('/light_off', methods=["POST"])
-@slack_verification()
-def light_off():
-    """Turn off light
-
-    Returns:
-        str: Response to slack
-    """
-    data = utils.parse_slash_post(request.form)
-    light = data.get('text', '').strip().lower()
-    if light not in ['kitchen', 'bedroom', 'other', 'led']:
-        return 'Please specify kitchen, bedroom, led or other'
-    code_map = {
-        'kitchen': 4478412,
-        'bedroom': 4478268,
-        'other': 4478732
-    }
-    if light in ['kitchen', 'bedroom', 'other']:
-        utils.codesend(code_map[light])
-    else:
-        utils.led(False)
-    return 'Light {} turned off'.format(light)
 
 @app.route('/rotate', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def rotate():
-    """Rotate the camera
+    """Rotate the camera. Need to pause the camera process otherwise rotating
+    will trip motion detection due to a vastly different image.
 
     Returns:
         str: Response to slack
@@ -355,28 +311,6 @@ def current_position():
     return 'Panned to {0}. Tilted to {1}'.format(utils.get_pan(),
                                                  utils.get_tilt())
 
-@app.route('/web_rotate', methods=["GET", "POST"])
-def web_rotate():
-    """Rotate the camera for the live stream site
-
-    Returns:
-        str: Dummy response
-    """
-    pan = utils.get_pan()
-    tilt = utils.get_tilt()
-    rotate_dir = request.args.get('rotate')
-    action = {
-        'L': ('pan', pan + 20),
-        'R': ('pan', pan + -20),
-        'U': ('tilt', tilt + -20),
-        'D': ('tilt', tilt + 20)
-        }
-
-    move = action[rotate_dir]
-    rotate_function = getattr(pantilthat, move[0])
-    rotate_function(move[1])
-    return "Success"
-
 
 @app.route("/last_image", methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
@@ -406,31 +340,6 @@ def last_image():
     return response
 
 
-def gen(camera):
-    """Video streaming generator function."""
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-
-@app.route('/video_feed')
-def video_feed():
-    """Video streaming route. Put this in the src attribute of an img tag."""
-    mimetype = 'multipart/x-mixed-replace; boundary=frame'
-    return Response(gen(Camera()), mimetype=mimetype)
-
-
-@app.route('/raspberries')
-def index():
-    """Return the homepage html
-
-    Returns:
-        str: Homepage html
-    """
-    return render_template('index.html')
-
-
 @app.route("/listening", methods=["GET", "POST"])
 def hears():
     """
@@ -454,7 +363,7 @@ def hears():
                              {"content_type": "application/json"})
 
     token = slack_event.get("token")
-    if not validate_slack(token):
+    if not utils.validate_slack(token):
         message = "Invalid Slack verification token"
         # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
         # Slack's automatic retries during development.
