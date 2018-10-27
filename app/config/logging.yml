@@ -1,0 +1,41 @@
+version: 1
+formatters:
+    simpleFormatter:
+        format: '%(asctime)s|%(levelname)s|%(name)s: %(message)s'
+        datefmt: '%Y/%m/%d %H:%M:%S'
+    verboseFormatter:
+        format: >-
+          %(levelname)s|%(asctime)s|%(name)s|%(filename)s|%(funcName)s
+          |%(lineno)d: %(message)s
+        datefmt: '%Y/%m/%d %H:%M:%S'
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        formatter: simpleFormatter
+        level: DEBUG
+        stream: ext://sys.stdout
+    file:
+        class : logging.FileHandler
+        formatter: simpleFormatter
+        level: DEBUG
+        filename: logfile.log
+
+loggers:
+    werkzeug:
+        level: DEBUG
+    urllib3:
+        level: INFO
+    requests:
+        level: INFO
+    app:
+        level: DEBUG
+    who_is_home:
+        level: DEBUG
+    ## optionally configure loggers at the module level
+    # app.utils:
+    #     level: DEBUG
+
+root:
+    # specifies handlers for all loggers
+    handlers: [console, file]
