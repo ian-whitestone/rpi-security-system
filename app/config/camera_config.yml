@@ -1,0 +1,55 @@
+##### TUNE-ABLE VARIABLES #####
+
+# The minimum number of consecutive frames containing motion before an image can
+# be uploaded
+min_motion_frames: 8
+
+# The minimum area size of an image (in pixels) for a region to be considered
+# motion or not. Smaller values will lead to more areas marked as motion,
+# whereas higher values of min_area  will only mark larger regions as motion
+min_area: 5000
+
+# The number of seconds to wait in between uploads.
+occ_min_upload_seconds: 5.0
+
+# The number of seconds to wait in between no motion detected uploads.
+unocc_min_upload_seconds: 600
+
+# Number of frames to store and save with each image
+frame_store_cnt: 300
+
+
+##### CAMERA SETTINGS - THINGS I WON'T BE OPTIMIZING #####
+
+# alpha regulates the update speed (how fast the accumulator forgets about earlier images)
+# higher: average image tries to catch even very fast and short changes in the data
+# lower: average becomes sluggish and it won't consider fast changes in the input images
+alpha: 0.1
+
+# Number of dilate iterations after thresholding
+dilate_iterations: 2
+
+# Kernel size for gaussian blurring
+ksize: [21, 21]
+
+# The minimum absolute value difference between our current frame and averaged
+# frame for a given pixel to be triggered as motion. Smaller values will lead
+# to more motion being detected, larger values to less motion detected.
+delta_thresh: 5
+
+# The width and height of the video frame from our Raspberry Pi camera
+resolution: [640, 480]
+
+# The desired Frames Per Second from our Raspberry Pi camera
+fps: 10
+
+# number of pixels in the frame
+frame_width: 500
+
+# Vertically flip the camera
+vflip: True
+
+# Horizontally flip the camera
+hflip: True
+
+

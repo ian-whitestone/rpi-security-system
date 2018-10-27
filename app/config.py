@@ -9,7 +9,7 @@ IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 CONF_DIR = os.path.join(CURR_DIR, 'config')
 LOG_DIR = os.path.join(CURR_DIR, 'logs')
 
-CONF_PATH = os.path.join(CONF_DIR, 'config.yml')
+CAMERA_CONF_PATH = os.path.join(CONF_DIR, 'camera_config.yml')
 PRIVATE_CONF_PATH = os.path.join(CONF_DIR, 'private.yml')
 
 def read_yaml(yaml_file):
@@ -29,7 +29,7 @@ def read_yaml(yaml_file):
     return data
 
 def load_camera_config():
-    return read_yaml(CONF_PATH)
+    return read_yaml(CAMERA_CONF_PATH)
 
 def load_private_config():
     return read_yaml(PRIVATE_CONF_PATH)

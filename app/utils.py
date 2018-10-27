@@ -12,6 +12,7 @@ import signal
 import time
 import shutil
 
+import cv2
 import psutil
 import boto3
 from slackclient import SlackClient
@@ -62,6 +63,16 @@ def redis_set(key, value):
         value (): Value to be associated with key
     """
     REDIS_CONN.set(key, value)
+
+def save_image(filepath, frame):
+    """Save an image
+    Args:
+        filepath (str): Filepath to save image to
+        frame (numpy.ndarray): Image to save
+    """
+    LOGGER.debug('Saving image to %s' % filepath)
+    cv2.imwrite(filepath, frame)
+    return
 
 def get_tilt():
     """Get the current tilt value

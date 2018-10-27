@@ -30,11 +30,13 @@ loggers:
         level: INFO
     app:
         level: DEBUG
-    who_is_home:
-        level: DEBUG
     ## optionally configure loggers at the module level
     # app.utils:
     #     level: DEBUG
+    who_is_home:
+        level: DEBUG
+    security_system:
+        level: DEBUG
 
 root:
     # specifies handlers for all loggers

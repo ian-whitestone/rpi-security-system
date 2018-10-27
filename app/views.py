@@ -11,18 +11,15 @@ import logging
 from functools import wraps
 
 from flask import request, make_response, render_template, Response, jsonify
-from app import panner as pantilthat
+import pantilthat
+
 from app import app
+from app import config
 from app import utils
-from app.camera import Camera
-from app.gpio_data import GPIOData
 
 logging.basicConfig(level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
-CURR_DIR = os.path.dirname(__file__)
-IMG_DIR = os.path.join(CURR_DIR, 'imgs')
-TEMPLATES_DIR = os.path.join(CURR_DIR, 'templates')
-CONF = utils.read_yaml(os.path.join(CURR_DIR, 'private.yml'))
+CONF = config.load_private_config()
 
 
 def slack_verification(user=None):
@@ -61,17 +58,6 @@ def initialize():
     utils.redis_set('camera_status', True)
     utils.redis_set('camera_notifications', True)
     utils.redis_set('save_images', True)
-    utils.led(True)
-    # kick of camera background process
-    camera = Camera()
-
-    LOGGER.info('Initializing GPIO redis variables')
-    utils.redis_set('gpio_status', True)
-    # kick of GPIO background process
-    gpio = GPIOData()
-
-    # kick off other background processes (image uploading, sensors etc.)
-    # TODO: implement
     LOGGER.info('Initialization complete')
     return "Initialization completed"
 
@@ -152,7 +138,6 @@ def pycam_on():
         response = 'Pycam is already running'
     else:
         utils.redis_set('camera_status', True)
-        utils.led(True)
         response = "Pycam has been turned on"
     return response
 
@@ -165,7 +150,6 @@ def pycam_off():
         str: Response to slack
     """
     utils.redis_set('camera_status', False)
-    utils.led(False)
     return "Pycam has been turned off"
 
 @app.route('/gpio_on', methods=["GET", "POST"])
