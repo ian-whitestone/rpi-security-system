@@ -1,15 +1,32 @@
-<h2>Flask</h2>
-<pre id="flask_output"></pre>
+<h2>Flask App Logs</h2>
+<pre id="flask_app_output"></pre>
 
 <br>
+
+<h2>Flask Access Logs</h2>
+<pre id="flask_access_output"></pre>
+
 <br>
 
-<h2>Glances</h2>
+<h2>Security System Logs</h2>
+<pre id="security_system_output"></pre>
+
+<br>
+
+<h2>S3 Upload Logs</h2>
+<pre id="s3_upload_output"></pre>
+
+<br>
+
+<h2>Glances Logs</h2>
 <pre id="glances_output"></pre>
 
 <script>
     var glances_output = document.getElementById('glances_output');
-    var flask_output = document.getElementById('flask_output');
+    var flask_app_output = document.getElementById('flask_app_output');
+    var flask_access_output = document.getElementById('flask_access_output');
+    var security_system_output = document.getElementById('security_system_output');
+    var s3_upload_output = document.getElementById('s3_upload_output');
 
 
     function fetch_glances() {
@@ -23,28 +40,63 @@
         }        
     }
 
-    function fetch_flask() {
-        var flask_xhr = new XMLHttpRequest();
-        flask_xhr.open('GET', '{{ url_for('flask_logstream') }}');
-        flask_xhr.send();
+    function fetch_flask_app() {
+        var flask_app_xhr = new XMLHttpRequest();
+        flask_app_xhr.open('GET', '{{ url_for('flask_app_logstream') }}');
+        flask_app_xhr.send();
 
-        flask_xhr.onreadystatechange=(e)=>{
-            console.log(flask_xhr.responseText)
-            flask_output.textContent = flask_xhr.responseText;
+        flask_app_xhr.onreadystatechange=(e)=>{
+            console.log(flask_app_xhr.responseText)
+            flask_app_output.textContent = flask_app_xhr.responseText;
         }        
     }
 
+    function fetch_flask_access() {
+        var flask_access_xhr = new XMLHttpRequest();
+        flask_access_xhr.open('GET', '{{ url_for('flask_access_logstream') }}');
+        flask_access_xhr.send();
+
+        flask_access_xhr.onreadystatechange=(e)=>{
+            console.log(flask_access_xhr.responseText)
+            flask_access_output.textContent = flask_access_xhr.responseText;
+        }        
+    }
+
+    function fetch_security_system() {
+        var security_system_xhr = new XMLHttpRequest();
+        security_system_xhr.open('GET', '{{ url_for('security_system_logstream') }}');
+        security_system_xhr.send();
+
+        security_system_xhr.onreadystatechange=(e)=>{
+            console.log(security_system_xhr.responseText)
+            security_system_output.textContent = security_system_xhr.responseText;
+        }        
+    }
+
+    function fetch_s3_upload() {
+        var s3_upload_xhr = new XMLHttpRequest();
+        s3_upload_xhr.open('GET', '{{ url_for('s3_upload_logstream') }}');
+        s3_upload_xhr.send();
+
+        s3_upload_xhr.onreadystatechange=(e)=>{
+            console.log(s3_upload_xhr.responseText)
+            s3_upload_output.textContent = security_system_xhr.responseText;
+        }        
+    }
+
+    function refresh() {
+        fetch_glances()
+        fetch_flask_app()
+        fetch_flask_access()
+        fetch_security_system()
+        fetch_s3_upload()
+    }
 
     // call once for initial load
-    fetch_glances()
-    fetch_flask()
+    refresh()
 
     setInterval(function() {
-        fetch_glances()
-    }, 10000);
-
-    setInterval(function() {
-        fetch_flask()
+        refresh()
     }, 10000);
     
 </script>

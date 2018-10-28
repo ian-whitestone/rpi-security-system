@@ -109,7 +109,7 @@ def status():
 def interactive():
     """This function is triggered after one of the buttons is clicked in slack
     (i.e. the occupied/unoccupied buttons)
-    
+
     Returns:
         str: Response to slack
     """
@@ -314,6 +314,24 @@ def tail(filepath, num_lines="20"):
 def glances_logstream():
     return Response(tail('/tmp/glances-pi.log', '50'),  mimetype='text/plain')
 
-@app.route('/flask_logstream')
-def flask_logstream():
-    return Response(tail('/tmp/glances-pi.log', '50'),  mimetype='text/plain')
+LOG_PATH = '/home/pi/rpi-security-system/app/logs/'
+
+@app.route('/flask_app_logstream')
+def flask_app_logstream():
+    contents = tail(LOG_PATH + 'app.log', '50')
+    return Response(contents,  mimetype='text/plain')
+
+@app.route('/flask_access_logstream')
+def flask_access_logstream():
+    contents = tail(LOG_PATH + 'access.log', '50')
+    return Response(contents,  mimetype='text/plain')
+
+@app.route('/security_system_logstream')
+def security_system_logstream():
+    contents = tail(LOG_PATH + 'security_system.log', '50')
+    return Response(contents,  mimetype='text/plain')
+
+@app.route('/s3_upload_logstream')
+def s3_upload_logstream():
+    contents = tail(LOG_PATH + 's3_upload.log', '50')
+    return Response(contents,  mimetype='text/plain')
