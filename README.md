@@ -59,34 +59,42 @@ As pointed out by someone in the comments.
 `/home/pi/.config/glances/glances.conf`
 
 ```
-[amp_python]
+[amp_Flask-App]
 enable=true
-regex=.*python.*
+regex=.*gunicorn.*
 refresh=3
-countmin=1
+countmin=2
+countmax=3
 
-[amp_security-system]
+[amp_Security-System]
 enable=true
 regex=.*security_system.*
 refresh=3
 countmin=1
 countmax=1
 
-[amp_flask-app]
+[amp_Who-Is-Home]
 enable=true
-regex=.*run_flask.*
+regex=.*who_is_home.*
 refresh=3
 countmin=1
 countmax=1
 
-[amp_redis-server]
+[amp_S3-Upload]
+enable=true
+regex=.*s3_upload.*
+refresh=3
+countmin=1
+countmax=1
+
+[amp_Redis]
 enable=true
 regex=.*redis-server.*
 refresh=3
 countmin=1
 countmax=1
 
-[amp_raspi-temperature]
+[amp_Raspi-Temperature]
 enable=true
 regex=.*
 refresh=3
@@ -96,15 +104,16 @@ countmin=1
 
 Here I have some specific processes/things I am monitoring:
 
-1) All python processes
-2) Security system python process
-3) Flask app python process
-4) Redis Server
-5) Raspberry Pi Temperature (along with total number of running processes)
+- Flask app python process
+- A few other python processes
+- Redis Server
+- Raspberry Pi Temperature (along with total number of running processes)
 
 The result is a pretty slick dashboard. You can see I don't have a flask process running, which is flagged in red due to the `count_min=1` constraint in the config.
 
 <img src="imgs/glances.gif">
+
+Note: the gif above is a bit outdated as I have added more process to monitor.
 
 **Setting Up a Password**
 
@@ -147,7 +156,12 @@ rpi_cam_app:
 
 ```bash
 cd rpi-security-system
-gunicorn -c gunicorn.conf run_flask
+
+nohup gunicorn -c gunicorn.conf run_flask &
+nohup python3 app/who_is_home.py > app/logs/who_is_home.log 2>&1 &
+nohup python3 app/security_system.py > app/logs/security_system.log &
+nohup python3 app/s3_upload.py > app/logs/security_system.log &
+nohup glances -w -p 52962 --disable-plugin docker --password &
 ```
 
 ## Architecture
