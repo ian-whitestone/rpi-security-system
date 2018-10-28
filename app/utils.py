@@ -33,6 +33,7 @@ REDIS_CONN = redis.StrictRedis(
     charset="utf-8",
     decode_responses=True
 )
+SLACK_BOT_TOKEN = CONF['rpi_cam_app']['bot_token']
 
 def redis_get(key):
     """Fetch a key from redis
@@ -128,7 +129,7 @@ def slack_post_interactive(response):
     if response['ok']:
         file_id = response['file']['id']
         file_title = response['file']['title']
-        slack_client = SlackClient(CONF['rpi_cam_app']['bot_token'])
+        slack_client = SlackClient(SLACK_BOT_TOKEN)
         response = slack_client.api_call(
             "chat.postMessage",
             as_user=True,
@@ -186,7 +187,7 @@ def slack_delete_file(file_id):
     return response
 
 def slack_post(message, channel=CONF['alerts_channel'],
-               token=CONF['rpi_cam_app']['bot_token']):
+               token=SLACK_BOT_TOKEN):
     """Post a message to a channel
 
     Args:
@@ -212,7 +213,7 @@ def slack_post(message, channel=CONF['alerts_channel'],
     return
 
 def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
-                 token=CONF['rpi_cam_app']['bot_token']):
+                 token=SLACK_BOT_TOKEN):
     """Upload a file to a channel
 
     Args:

@@ -139,13 +139,10 @@ ian_uid: XXXXX # id of the user I allow to make slack requests
 alerts_channel: XXXX # channel ID (named alerts), where messages are posted to
 
 rpi_cam_app:
-  oauth_token: xoxp-XXXXX-XXX # get this from https://api.slack.com/apps/<your_app_id>/oauth? 
   bot_token: xoxb-XXXXX-XXX # get this from https://api.slack.com/apps/<your_app_id>/oauth? 
   verification_token: XXXXXX # get this from app homepage: https://api.slack.com/apps/<your_app_id>
 ```
 
-**TODO**
-- See if you can use `bot_token` for the `files.delete` method instead of `oauth_token`
 
 ## Architecture
 
