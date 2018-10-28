@@ -1,4 +1,4 @@
-##### Notification & Image Saving Settings #####
+##### SECURITY SYSTEM SETTINGS #####
 
 # The number of seconds to wait between saving images
 # These images are returned in the /last_image slack slash command
@@ -7,27 +7,29 @@ min_save_seconds: 60
 # The number of seconds to wait in between notifications on slack
 min_notify_seconds: 60
 
+# The minimum number of consecutive frames containing motion before an image 
+# tagged as occupied will actually be uploaded
+min_motion_frames: 5 # about half a second worth of motion at 10 frames per second
+
 # Whether you want to train the system
 # This will prompt you to tag the notifications in slack,
 train: True
 bucket: rpi-security-system # bucket to save tagged data in
 
-##### TUNE-ABLE VARIABLES #####
 
-# The minimum number of consecutive frames containing motion before an image can
-# be uploaded
-min_motion_frames: 8
+##### MOTION MODEL CLASS SETTINGS #####
 
 # The minimum area size of an image (in pixels) for a region to be considered
 # motion or not. Smaller values will lead to more areas marked as motion,
 # whereas higher values of min_area  will only mark larger regions as motion
 min_area: 5000
 
-# Number of frames to store and save with each image
-frame_store_cnt: 300
 
 
-##### CAMERA SETTINGS - THINGS I WON'T BE OPTIMIZING #####
+##### MOTION DETECTOR CLASS SETTINGS #####
+
+# Number of PIR motion sensor values to store
+pir_store_cnt: 300
 
 # alpha regulates the update speed (how fast the accumulator forgets about earlier images)
 # higher: average image tries to catch even very fast and short changes in the data

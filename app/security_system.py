@@ -27,14 +27,47 @@ CONF = config.load_config()
 
 config.init_logging()
 
+
+class MotionModel():
+
+    def __init__(self):
+        """Initialize the MotionModel class
+        """
+        self.min_area = CONF['min_area']
+
+    def classify(self, frame, contours, pir):
+        """Classify whether the system should flag motion being detected
+        
+        Args:
+            frame (numpy.ndarray): Image to save
+            contours (list): List of contours meta
+            pir (list): List of PIR motion sensor values
+        
+        Returns:
+            bool: Motion classification
+        """
+        
+        classification = False
+
+        LOGGER.info('Mean PIR value %s', np.mean(pir))
+        for contour in contours:
+            if contour['size'] > self.min_area:
+                classification = True
+
+        return classification
+
+
 class MotionDetector():
 
     def __init__(self):
         """Initialize the MotionDetector class
         """
         LOGGER.debug('Initializing motion detector class')
-        # GPIO PIN the PIR motion sensor is attached to
+
+        # PIR motion sensor settings
+        self.pir_store_cnt = CONF['pir_store_cnt']
         self.PIR = 21
+        self.pir_values = []
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PIR, GPIO.IN)
 
@@ -63,7 +96,7 @@ class MotionDetector():
         background image) and the value of the PIR motion sensor.
 
         Yields:
-            tuple: (Latest frame, list of contours meta info, the value from the PIR sensor)
+            tuple: (Latest frame, list of contours meta info)
         """
         LOGGER.info('Starting camera process')
 
@@ -96,11 +129,13 @@ class MotionDetector():
 
                 contours = self.compare_frame(gray, avg)
                 pir_value = self.read_pir()
+                self.pir_values.append(pir_value)
+                self.pir_values = self.pir_values[-1*self.pir_store_cnt:]
 
                 # reset stream for next frame
                 raw_capture.truncate(0)
 
-                yield (frame, contours, pir_value)
+                yield (frame, contours)
 
     def process_frame(self, frame):
         """Convert the latest frame to grayscale and blur it
@@ -161,6 +196,8 @@ class SecuritySystem(MotionDetector):
         """Initialize the SecuritySystem class"""
         LOGGER.debug('Initializing security system class')
         
+        self.model = MotionModel()
+
         # Timestamp formats
         self.ts_format_1 = "%Y-%m-%d %H:%M:%S"
         self.ts_format_2 = "%Y-%m-%d-%H-%M-%S.%f"
@@ -174,9 +211,6 @@ class SecuritySystem(MotionDetector):
         # number of consecutive motion frames detected
         self.motion_counter = 0
 
-        # list of frames & metadata for storage
-        self.frames_hist = []
-
         # Training settings
         self.train = CONF['train']
         self.bucket = CONF['bucket']
@@ -184,11 +218,7 @@ class SecuritySystem(MotionDetector):
         # Notification/image saving options
         self.min_save_seconds = CONF["min_save_seconds"]
         self.min_notify_seconds = CONF['min_notify_seconds']
-
-        # Tune-able parameters
-        self.min_area = CONF['min_area']
         self.min_motion_frames = CONF['min_motion_frames']
-        self.frame_store_cnt = CONF['frame_store_cnt']
 
         super(SecuritySystem, self).__init__()
 
@@ -213,21 +243,6 @@ class SecuritySystem(MotionDetector):
         utils.save_image(fpath, frame)
         return fpath
 
-    def classify(self, frame, contours, pir):
-        """Classify whether the system should flag motion being detected
-        
-        Args:
-            frame (numpy.ndarray): Image to save
-            contours (list): List of contours meta
-            pir (list): List of PIR motion sensor values
-        
-        Returns:
-            bool: Motion classification
-        """
-        
-        #TODO: IMPLEMENT ME!
-        return False
-
     def save_pickle(self, frame, contours, pir, ts, classification):
         data = {
             'frame': frame,
@@ -246,12 +261,13 @@ class SecuritySystem(MotionDetector):
             if utils.redis_get('camera_status'):
                 stream_iterator = self.stream()
 
-                for frame, contours, pir in stream_iterator:
+                for frame, contours in stream_iterator:
                     timestamp = datetime.now()
                     ts = timestamp.strftime(self.ts_format_2)
                     
                     # Classify latest frame as occupied or not
-                    occupied = self.classify(frame, contours, pir)
+                    occupied = self.model.classify(frame, contours, self.pir_values)
+                    self.motion_counter = self.motion_counter + 1 if occupied else 0
 
                     # Save latest image if enough time has elapsed since last save
                     last_save = (timestamp - self.last_save).seconds
@@ -261,12 +277,17 @@ class SecuritySystem(MotionDetector):
 
                         # Save for backtesting & training
                         if not occupied and self.train:
-                            self.save_pickle(frame, contours, pir, ts, False)
+                            self.save_pickle(
+                                frame, contours, self.pir_values, ts, False)
 
                     # Determine whether to notify in slack
                     last_notified = (timestamp - self.last_notified).seconds
-                    if utils.redis_get('camera_notifications') and \
-                        last_notified >= self.min_notify_seconds and occupied:                        
+                    valid_ts = timestamp > self.last_notified
+                    elasped = last_notified >= self.min_notify_seconds and valid_ts
+                    notifications = utils.redis_get('camera_notifications')
+                    motion_count = self.motion_counter >= self.min_motion_frames
+
+                    if notifications and elapsed and motion_count and occupied:                        
                         fpath = self.save_last_image(frame, timestamp, ts)
                         self.last_notified = timestamp
                         response = utils.slack_upload(
@@ -276,7 +297,8 @@ class SecuritySystem(MotionDetector):
                         # Save for backtesting & training
                         if self.train:
                             utils.slack_post_interactive(response)
-                            self.save_pickle(frame, contours, pir, ts, True)
+                            self.save_pickle(
+                                frame, contours, self.pir_values, ts, True)
 
 
                     if not utils.redis_get('camera_status'):
