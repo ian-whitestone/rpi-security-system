@@ -127,7 +127,7 @@ def interactive():
     open(filepath, 'w').close()
 
     utils.slack_delete_file(action_value['file_id'])
-    return 'Response for {} logged'.format(filename)
+    return 'Response for {} logged'.format(img_filename)
 
 @app.route('/pycam_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])

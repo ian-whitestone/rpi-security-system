@@ -265,11 +265,14 @@ class SecuritySystem(MotionDetector):
                     
                     # Classify latest frame as occupied or not
                     occupied = self.model.classify(frame, contours, self.pir_values)
+                    LOGGER.info('Image classification: %s', occupied)
                     self.motion_counter = self.motion_counter + 1 if occupied else 0
+                    LOGGER.debug('Motion counter: %s', self.motion_counter)
 
                     # Save latest image if enough time has elapsed since last save
                     last_save = (timestamp - self.last_save).seconds
                     if last_save >= self.min_save_seconds:
+                        LOGGER.debug('Saving latest image')
                         self.save_last_image(frame, timestamp, 'latest')
                         self.last_save = timestamp
 
@@ -281,11 +284,12 @@ class SecuritySystem(MotionDetector):
                     # Determine whether to notify in slack
                     last_notified = (timestamp - self.last_notified).seconds
                     valid_ts = timestamp > self.last_notified
-                    elasped = last_notified >= self.min_notify_seconds and valid_ts
+                    elapsed = last_notified >= self.min_notify_seconds and valid_ts
                     notifications = utils.redis_get('camera_notifications')
                     motion_count = self.motion_counter >= self.min_motion_frames
 
-                    if notifications and elapsed and motion_count and occupied:                        
+                    if notifications and elapsed and motion_count and occupied:
+                        LOGGER.info('Sending slack alert!')
                         fpath = self.save_last_image(frame, timestamp, ts)
                         self.last_notified = timestamp
                         response = utils.slack_upload(
