@@ -357,3 +357,18 @@ def hears():
     # send a quirky but helpful error response
     return make_response("[NO EVENT IN SLACK REQUEST] These are not the droids\
                          you're looking for.", 404, {"X-Slack-No-Retry": 1})
+
+@app.route('/logz')
+def logz():
+    return render_template('templates/logz.html')
+
+
+@app.route('/logz_stream')
+def stream():
+    def generate():
+        with open('/tmp/glances-pi.log') as f:
+            while True:
+                yield f.read()
+                sleep(1)
+
+    return app.response_class(generate(), mimetype='text/plain')
