@@ -24,9 +24,14 @@ import config
 LOGGER = logging.getLogger('security_system')
 CONF = config.load_camera_config()
 
+config.init_logging()
+
 class MotionDetector():
 
     def __init__(self):
+        """Initialize the MotionDetector class
+        """
+        LOGGER.debug('Initializing motion detector class')
         # GPIO PIN the PIR motion sensor is attached to
         self.PIR = 21
         GPIO.setmode(GPIO.BCM)
@@ -43,7 +48,7 @@ class MotionDetector():
         self.ksize = tuple(CONF['ksize'])
         self.delta_thresh = CONF["delta_thresh"]
 
-    def read_pir():
+    def read_pir(self):
         """Read signal from PIR motion sensor
 
         Returns:
@@ -152,9 +157,8 @@ class MotionDetector():
 class SecuritySystem(MotionDetector):
 
     def __init__(self):
-        """Initialize the motion detector class"""
-        self.motion_detector = MotionDetector()
-
+        """Initialize the SecuritySystem class"""
+        LOGGER.debug('Initializing security system class')
         # last occupied image upload
         self.last_occ_uploaded = datetime.now() + timedelta(minutes=1)
 
@@ -174,6 +178,7 @@ class SecuritySystem(MotionDetector):
         self.min_motion_frames = CONF['min_motion_frames']
         self.frame_store_cnt = CONF['frame_store_cnt']
 
+        super(SecuritySystem, self).__init__()
 
     def run(self):
         while True:
@@ -194,5 +199,6 @@ class SecuritySystem(MotionDetector):
                 time.sleep(2)
 
 if __name__ == '__main__':
+    LOGGER.info('Running security system')
     system = SecuritySystem()
     system.run()
