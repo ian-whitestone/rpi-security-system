@@ -1,9 +1,7 @@
 """
 Main camera module; handles motion detection based on background subtraction.
 
-Based off Adrian Rosebrock's excellent tutorials here:
-
-http://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/
+Inspired & based off Adrian Rosebrock's excellent pyimagesearch tutorials.
 """
 import os
 import logging

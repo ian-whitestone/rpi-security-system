@@ -8,3 +8,4 @@ boto3
 slackclient
 redis
 imutils
+gunicorn

@@ -40,8 +40,9 @@ def init_logging():
 
     """
     log_conf = read_yaml(os.path.join(CONF_DIR, 'logging.yml'))
-    log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
-    log_file = os.path.join(LOG_DIR, log_base_file)
 
-    log_conf['handlers']['file']['filename'] = log_file
+    # log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
+    # log_file = os.path.join(LOG_DIR, log_base_file)
+    # log_conf['handlers']['file']['filename'] = log_file
+    
     logging.config.dictConfig(log_conf)

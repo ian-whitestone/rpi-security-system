@@ -1,4 +1,7 @@
 version: 1
+
+disable_existing_loggers: False
+
 formatters:
     simpleFormatter:
         format: '%(asctime)s|%(levelname)s|%(name)s: %(message)s'
@@ -15,11 +18,11 @@ handlers:
         formatter: simpleFormatter
         level: DEBUG
         stream: ext://sys.stdout
-    file:
-        class : logging.FileHandler
-        formatter: simpleFormatter
-        level: DEBUG
-        filename: logfile.log
+    # file:
+    #     class : logging.FileHandler
+    #     formatter: simpleFormatter
+    #     level: DEBUG
+    #     filename: logfile.log
 
 loggers:
     werkzeug:
@@ -40,4 +43,4 @@ loggers:
 
 root:
     # specifies handlers for all loggers
-    handlers: [console, file]
+    handlers: [console]

@@ -143,6 +143,12 @@ rpi_cam_app:
   verification_token: XXXXXX # get this from app homepage: https://api.slack.com/apps/<your_app_id>
 ```
 
+## Usage
+
+```bash
+cd rpi-security-system
+gunicorn -c gunicorn.conf run_flask
+```
 
 ## Architecture
 
