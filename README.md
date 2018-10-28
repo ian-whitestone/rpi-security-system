@@ -104,7 +104,7 @@ Here I have some specific processes/things I am monitoring:
 
 The result is a pretty slick dashboard. You can see I don't have a flask process running, which is flagged in red due to the `count_min=1` constraint in the config.
 
-<img src="imgs/glances.png">
+<img src="imgs/glances.gif">
 
 **Setting Up a Password**
 
