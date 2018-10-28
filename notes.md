@@ -1,31 +1,3 @@
-## Redesign
-
-
-### Camera Thread
-
-- process each frame
-- upload metadata to redis:
-    - list of countours
-
-- upload images to redis:
-    - original image (numpy array)
-    - frameDelta??
-
-
-### Motion Sensor Thread
-
-- use same events/second as camera
-
-
-### Processor Thread
-
-- subscribe to redis threads
-- update global variables in module
-
-- have "run_model" function run every X seconds to process new data, delete old records
-
-
-- HOW TO STORE DATA FOR HISTORICAL TRAINING....
 
 ## Resources
 

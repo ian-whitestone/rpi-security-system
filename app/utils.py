@@ -166,7 +166,6 @@ def slack_post_interactive(response):
                     ]
                 }]
             )
-
     else:
         LOGGER.error('Failed image upload %s', response)
 

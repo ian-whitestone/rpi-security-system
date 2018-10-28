@@ -296,29 +296,14 @@ def current_position():
 @app.route("/last_image", methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
 def last_image():
-    """Return the last image taken, optionally filtering for the last occupied
-    or unnoccupied image
+    """Return the last image taken
 
     Returns:
         str: Response to slack
     """
-    data = utils.parse_slash_post(request.form)
-    if data['text'] != '':
-        text = data['text']
-        if text.lower() == 'o' or text.lower() == 'u':
-            ftype = ('occupied*' if text.lower() == 'o' else 'unoccupied*')
-        else:
-            return "Please specify 'O', 'U' or don't pass in anything"
-    else:
-        ftype = '*'
-    # TODO: get channel the message came from
-    latest_image = utils.latest_file(IMG_DIR, ftype)
-    if latest_image:
-        utils.slack_upload(latest_image, channel=data['channel_id'])
-        response = 'Returned image: {0}'.format(os.path.basename(latest_image))
-    else:
-        response = 'No images found'
-    return response
+    latest_image = os.path.join(config.IMG_DIR, 'latest.jpg')
+    utils.slack_upload(latest_image, channel=data['channel_id'])
+    return 'Latest image uploaded'
 
 
 @app.route("/listening", methods=["GET", "POST"])

@@ -1,3 +1,17 @@
+##### Notification & Image Saving Settings #####
+
+# The number of seconds to wait between saving images
+# These images are returned in the /last_image slack slash command
+min_save_seconds: 60
+
+# The number of seconds to wait in between notifications on slack
+min_notify_seconds: 60
+
+# Whether you want to train the system
+# This will prompt you to tag the notifications in slack,
+train: True
+bucket: rpi-security-system # bucket to save tagged data in
+
 ##### TUNE-ABLE VARIABLES #####
 
 # The minimum number of consecutive frames containing motion before an image can
@@ -8,12 +22,6 @@ min_motion_frames: 8
 # motion or not. Smaller values will lead to more areas marked as motion,
 # whereas higher values of min_area  will only mark larger regions as motion
 min_area: 5000
-
-# The number of seconds to wait in between uploads.
-occ_min_upload_seconds: 5.0
-
-# The number of seconds to wait in between no motion detected uploads.
-unocc_min_upload_seconds: 600
 
 # Number of frames to store and save with each image
 frame_store_cnt: 300
