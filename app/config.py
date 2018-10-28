@@ -35,14 +35,18 @@ def load_config():
 def load_private_config():
     return read_yaml(PRIVATE_CONF_PATH)
 
-def init_logging():
+def init_logging(log_file=None):
     """Initialize the logging setup
-
+    
+    Args:
+        log_file (str, optional): File to log to
+    
     """
     log_conf = read_yaml(os.path.join(CONF_DIR, 'logging.yml'))
 
-    # log_base_file = datetime.now().strftime("%Y-%m-%d-%H-%M")
-    # log_file = os.path.join(LOG_DIR, log_base_file)
-    # log_conf['handlers']['file']['filename'] = log_file
+    if log_file:
+        log_filepath = os.path.join(LOG_DIR, log_file)
+        log_conf['handlers']['file']['filename'] = log_filepath
+        log_conf['root']['handlers'].append('file')
     
     logging.config.dictConfig(log_conf)

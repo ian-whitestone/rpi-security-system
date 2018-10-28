@@ -11,18 +11,21 @@ formatters:
           %(levelname)s|%(asctime)s|%(name)s|%(filename)s|%(funcName)s
           |%(lineno)d: %(message)s
         datefmt: '%Y/%m/%d %H:%M:%S'
+    gunicornFormatter:
+        format: '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
+        datefmt: '%Y-%m-%d %H:%M:%S %z'
 
 handlers:
     console:
         class: logging.StreamHandler
-        formatter: simpleFormatter
+        formatter: gunicornFormatter
         level: DEBUG
         stream: ext://sys.stdout
-    # file:
-    #     class : logging.FileHandler
-    #     formatter: simpleFormatter
-    #     level: DEBUG
-    #     filename: logfile.log
+    file:
+        class : logging.FileHandler
+        formatter: simpleFormatter
+        level: DEBUG
+        filename: logfile.log
 
 loggers:
     werkzeug:

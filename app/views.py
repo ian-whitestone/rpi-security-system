@@ -11,7 +11,7 @@ from functools import wraps
 from flask import request, make_response, render_template, Response, jsonify
 import pantilthat
 
-from app import app
+from app import application as app
 from app import config
 from app import utils
 
