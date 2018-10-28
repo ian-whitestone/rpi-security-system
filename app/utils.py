@@ -27,9 +27,9 @@ except:
 LOGGER = logging.getLogger(__name__)
 CONF = config.load_private_config()
 REDIS_CONN = redis.StrictRedis(
-    host=CONF['redis']['host'],
-    port=CONF['redis']['port'],
-    db=CONF['redis']['db'],
+    host='localhost',
+    port=6379,
+    db=0,
     charset="utf-8",
     decode_responses=True
 )
@@ -128,7 +128,7 @@ def slack_post_interactive(response):
     if response['ok']:
         file_id = response['file']['id']
         file_title = response['file']['title']
-        slack_client = SlackClient(CONF['app_token'])
+        slack_client = SlackClient(CONF['rpi_cam_app']['bot_token'])
         response = slack_client.api_call(
             "chat.postMessage",
             as_user=True,
@@ -178,7 +178,7 @@ def slack_delete_file(file_id):
     Returns:
         dict: Slack response object
     """
-    slack_client = SlackClient(CONF['ian_token'])
+    slack_client = SlackClient(CONF['rpi_cam_app']['oauth_token'])
     response = slack_client.api_call(
         'files.delete',
         file=file_id
@@ -186,7 +186,7 @@ def slack_delete_file(file_id):
     return response
 
 def slack_post(message, channel=CONF['alerts_channel'],
-               token=CONF['bot_token']):
+               token=CONF['rpi_cam_app']['bot_token']):
     """Post a message to a channel
 
     Args:
@@ -212,7 +212,7 @@ def slack_post(message, channel=CONF['alerts_channel'],
     return
 
 def slack_upload(fname, title=None, channel=CONF['alerts_channel'],
-                 token=CONF['bot_token']):
+                 token=CONF['rpi_cam_app']['bot_token']):
     """Upload a file to a channel
 
     Args:
