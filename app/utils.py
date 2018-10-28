@@ -128,13 +128,13 @@ def slack_post_interactive(response):
     """
     if response['ok']:
         file_id = response['file']['id']
-        file_title = response['file']['title']
+        filename = response['file']['title']
         slack_client = SlackClient(SLACK_BOT_TOKEN)
         response = slack_client.api_call(
             "chat.postMessage",
             as_user=True,
             channel=CONF['alerts_channel'],
-            text='Tag Image {}'.format(file_title),
+            text='Tag Image {}'.format(filename),
             attachments= [{
                     "text": "How should this image be tagged",
                     "callback_id": "tag_image",
@@ -149,7 +149,7 @@ def slack_post_interactive(response):
                             "value": str({
                                 'occupied': True,
                                 'file_id': file_id,
-                                'file_title': file_title
+                                'filename': filename
                             })
                         },
                         {
@@ -160,7 +160,7 @@ def slack_post_interactive(response):
                             "value": str({
                                 'occupied': False,
                                 'file_id': file_id,
-                                'file_title': file_title
+                                'filename': filename
                             })
                         }
                     ]

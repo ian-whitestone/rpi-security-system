@@ -239,7 +239,6 @@ class SecuritySystem(MotionDetector):
         text = 'occupied' if classification else 'unoccupied'
         filename = '{}_{}.pkl'.format(text, ts)
         filepath = os.path.join(config.TRAIN_DIR, filename)
-
         pickle.dump(data, open(filepath, "wb"))
 
     def run(self):

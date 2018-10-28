@@ -107,16 +107,27 @@ def status():
 
 @app.route('/interactive', methods=["POST"])
 def interactive():
+    """This function is triggered after one of the buttons is clicked in slack
+    (i.e. the occupied/unoccupied buttons)
+    
+    Returns:
+        str: Response to slack
+    """
     data = utils.parse_slash_post(request.form)
 
     payload = json.loads((data['payload']))
     action = payload['actions'][0]
     action_value = eval(action['value'])
     tag = action_value['occupied']
-    file_title = action_value['file_title']
-    # TODO: update database
+    img_filename = action_value['filename']
+
+    # Save an empty file with the logged tag
+    filename = "{}_{}.txt".format(tag, img_filename)
+    filepath = os.path.join(config.TRAIN_DIR, filename)
+    open(filepath, 'w').close()
+
     utils.slack_delete_file(action_value['file_id'])
-    return 'Response for {} logged'.format(file_title)
+    return 'Response for {} logged'.format(filename)
 
 @app.route('/pycam_on', methods=["GET", "POST"])
 @slack_verification(CONF['ian_uid'])
