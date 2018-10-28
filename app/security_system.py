@@ -10,6 +10,7 @@ import logging
 import threading
 import time
 from datetime import datetime, timedelta
+import pickle
 
 import picamera
 import cv2
@@ -212,7 +213,7 @@ class SecuritySystem(MotionDetector):
         utils.save_image(fpath, frame)
         return fpath
 
-    def classify(frame, contours, pir):
+    def classify(self, frame, contours, pir):
         """Classify whether the system should flag motion being detected
         
         Args:
@@ -228,7 +229,18 @@ class SecuritySystem(MotionDetector):
         return False
 
     def save_pickle(self, frame, contours, pir, ts, classification):
-        pass
+        data = {
+            'frame': frame,
+            'contours': contours,
+            'pir': pir,
+            'classification': classification,
+            'ts': ts
+        }
+        text = 'occupied' if classification else 'unoccupied'
+        filename = '{}_{}.pkl'.format(text, ts)
+        filepath = os.path.join(config.TRAIN_DIR, filename)
+
+        pickle.dump(data, open(filepath, "wb"))
 
     def run(self):
         while True:
@@ -255,7 +267,7 @@ class SecuritySystem(MotionDetector):
                     # Determine whether to notify in slack
                     last_notified = (timestamp - self.last_notified).seconds
                     if utils.redis_get('camera_notifications') and \
-                        last_notified >= self.min_notify_seconds:                        
+                        last_notified >= self.min_notify_seconds and occupied:                        
                         fpath = self.save_last_image(frame, timestamp, ts)
                         self.last_notified = timestamp
                         response = utils.slack_upload(
