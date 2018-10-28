@@ -5,7 +5,6 @@ import time
 import json
 import os
 import subprocess
-import select
 import logging
 from functools import wraps
 
@@ -19,12 +18,6 @@ from app import utils
 logging.basicConfig(level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 CONF = config.load_private_config()
-
-
-TAIL_GLANCES = subprocess.Popen(['tail', '-n', '20', '-F', '/tmp/glances-pi.log'], \
-    stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-GLANCES_POLL = select.poll()
-GLANCES_POLL.register(TAIL_GLANCES.stdout)
 
 def slack_verification(user=None):
     """Verify post request came from Slack by checking the token sent with the
@@ -366,25 +359,16 @@ def hears():
 def logz():
     return render_template('logz.html')
 
+def tail(filepath, num_lines="20"):
+    """"""
+    proc = subprocess.Popen(
+        ['tail', '-n', num_lines, filepath], stdout=subprocess.PIPE)
+    return proc.stdout.read()
+
 @app.route('/glances_logstream')
 def glances_logstream():
-    def generate():
-        while True:
-            if GLANCES_POLL.poll(1):
-                yield TAIL_GLANCES.stdout.readline()
-            else:
-                yield ''
-            time.sleep(10)
-    return app.response_class(generate(), mimetype='text/plain')
-
+    return Response(tail('/tmp/glances-pi.log', '50'),  mimetype='text/plain')
 
 @app.route('/flask_logstream')
 def flask_logstream():
-    def generate():
-        while True:
-            if GLANCES_POLL.poll(1):
-                yield TAIL_GLANCES.stdout.readline()
-            else:
-                yield ''
-            time.sleep(10)
-    return app.response_class(generate(), mimetype='text/plain')
+    return Response(tail('/tmp/glances-pi.log', '50'),  mimetype='text/plain')

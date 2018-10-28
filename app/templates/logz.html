@@ -9,23 +9,42 @@
 
 <script>
     var glances_output = document.getElementById('glances_output');
-
-    var glances_xhr = new XMLHttpRequest();
-    glances_xhr.open('GET', '{{ url_for('glances_logstream') }}');
-    glances_xhr.send();
-
-    setInterval(function() {
-        glances_output.textContent = glances_xhr.responseText;
-    }, 1000);
-
-
     var flask_output = document.getElementById('flask_output');
 
-    var flask_xhr = new XMLHttpRequest();
-    flask_xhr.open('GET', '{{ url_for('flask_logstream') }}');
-    flask_xhr.send();
+
+    function fetch_glances() {
+        var glances_xhr = new XMLHttpRequest();
+        glances_xhr.open('GET', '{{ url_for('glances_logstream') }}');
+        glances_xhr.send();
+
+        glances_xhr.onreadystatechange=(e)=>{
+            console.log(glances_xhr.responseText)
+            glances_output.textContent = glances_xhr.responseText;
+        }        
+    }
+
+    function fetch_flask() {
+        var flask_xhr = new XMLHttpRequest();
+        flask_xhr.open('GET', '{{ url_for('flask_logstream') }}');
+        flask_xhr.send();
+
+        flask_xhr.onreadystatechange=(e)=>{
+            console.log(flask_xhr.responseText)
+            flask_output.textContent = flask_xhr.responseText;
+        }        
+    }
+
+
+    // call once for initial load
+    fetch_glances()
+    fetch_flask()
 
     setInterval(function() {
-        flask_output.textContent = flask_xhr.responseText;
-    }, 1000);
+        fetch_glances()
+    }, 10000);
+
+    setInterval(function() {
+        fetch_flask()
+    }, 10000);
+    
 </script>
