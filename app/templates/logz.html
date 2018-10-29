@@ -37,7 +37,7 @@
         glances_xhr.onreadystatechange=(e)=>{
             console.log(glances_xhr.responseText)
             glances_output.textContent = glances_xhr.responseText;
-        }        
+        }
     }
 
     function fetch_flask_app() {
@@ -48,7 +48,7 @@
         flask_app_xhr.onreadystatechange=(e)=>{
             console.log(flask_app_xhr.responseText)
             flask_app_output.textContent = flask_app_xhr.responseText;
-        }        
+        }
     }
 
     function fetch_flask_access() {
@@ -59,7 +59,7 @@
         flask_access_xhr.onreadystatechange=(e)=>{
             console.log(flask_access_xhr.responseText)
             flask_access_output.textContent = flask_access_xhr.responseText;
-        }        
+        }
     }
 
     function fetch_security_system() {
@@ -70,7 +70,7 @@
         security_system_xhr.onreadystatechange=(e)=>{
             console.log(security_system_xhr.responseText)
             security_system_output.textContent = security_system_xhr.responseText;
-        }        
+        }
     }
 
     function fetch_s3_upload() {
@@ -80,8 +80,8 @@
 
         s3_upload_xhr.onreadystatechange=(e)=>{
             console.log(s3_upload_xhr.responseText)
-            s3_upload_output.textContent = security_system_xhr.responseText;
-        }        
+            s3_upload_output.textContent = s3_upload_xhr.responseText;
+        }
     }
 
     function refresh() {
@@ -98,5 +98,5 @@
     setInterval(function() {
         refresh()
     }, 10000);
-    
+
 </script>
