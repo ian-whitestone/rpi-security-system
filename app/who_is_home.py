@@ -55,6 +55,7 @@ def loop():
             try:
                 connected_humans = get_connected_humans()        
             except:
+                LOGGER.exception("message")
                 LOGGER.warning('Error while fetching connected_humans')
                 time.sleep(5)
                 continue
