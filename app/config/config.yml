@@ -9,7 +9,7 @@ min_notify_seconds: 60
 
 # The minimum number of consecutive frames containing motion before an image 
 # tagged as occupied will actually be uploaded
-min_motion_frames: 5 # about half a second worth of motion at 10 frames per second
+min_motion_frames: 10 # about a second worth of motion at 10 frames per second
 
 # Whether you want to train the system
 # This will prompt you to tag the notifications in slack,

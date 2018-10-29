@@ -122,7 +122,7 @@ def interactive():
     img_filename = action_value['filename']
 
     # Save an empty file with the logged tag
-    filename = "{}_{}.txt".format(tag, img_filename)
+    filename = "{}_{}.txt".format(tag, img_filename.replace('.jpg', ''))
     filepath = os.path.join(config.TRAIN_DIR, filename)
     open(filepath, 'w').close()
 

@@ -46,8 +46,6 @@ class MotionModel():
         """
         
         classification = False
-
-        LOGGER.info('Mean PIR value %s', np.mean(pir))
         for contour in contours:
             if contour['size'] > self.min_area:
                 classification = True
@@ -125,7 +123,7 @@ class MotionDetector():
                 # Update the background image
                 cv2.accumulateWeighted(gray, avg, self.alpha)
 
-                contours = self.compare_frame(gray, avg)
+                contours, frame_delta = self.compare_frame(gray, avg)
                 pir_value = self.read_pir()
                 self.pir_values.append(pir_value)
                 self.pir_values = self.pir_values[-1*self.pir_store_cnt:]
@@ -162,7 +160,7 @@ class MotionDetector():
             avg (numpy.ndarray): Running average of the images
 
         Returns:
-            list: List of metadata for delta areas
+            tuple: (List of metadata for delta areas, delta frame)
         """
 
 
@@ -185,7 +183,7 @@ class MotionDetector():
             meta['coords'] = cv2.boundingRect(contour)
             meta['size'] = cv2.contourArea(contour)
             contours_meta.append(meta)
-        return contours_meta
+        return contours_meta, thresh
 
 
 class SecuritySystem(MotionDetector):
@@ -201,10 +199,10 @@ class SecuritySystem(MotionDetector):
         self.ts_format_2 = "%Y-%m-%d-%H-%M-%S.%f"
 
         # last time notification was sent in slack
-        self.last_notified = datetime.now() + timedelta(minutes=1)
+        self.last_notified = datetime.now()
 
         # last time image was saved
-        self.last_save = datetime.now() - timedelta(minutes=10)
+        self.last_save = datetime.now()
 
         # number of consecutive motion frames detected
         self.motion_counter = 0
@@ -265,15 +263,13 @@ class SecuritySystem(MotionDetector):
                     
                     # Classify latest frame as occupied or not
                     occupied = self.model.classify(frame, contours, self.pir_values)
-                    LOGGER.info('Image classification: %s', occupied)
                     self.motion_counter = self.motion_counter + 1 if occupied else 0
-                    LOGGER.debug('Motion counter: %s', self.motion_counter)
 
                     # Save latest image if enough time has elapsed since last save
                     last_save = (timestamp - self.last_save).seconds
                     if last_save >= self.min_save_seconds:
                         LOGGER.debug('Saving latest image')
-                        self.save_last_image(frame, timestamp, 'latest')
+                        self.save_last_image(frame, timestamp, 'latest', True)
                         self.last_save = timestamp
 
                         # Save for backtesting & training
@@ -281,15 +277,21 @@ class SecuritySystem(MotionDetector):
                             self.save_pickle(
                                 frame, contours, self.pir_values, ts, False)
 
+
                     # Determine whether to notify in slack
                     last_notified = (timestamp - self.last_notified).seconds
-                    valid_ts = timestamp > self.last_notified
-                    elapsed = last_notified >= self.min_notify_seconds and valid_ts
-                    notifications = utils.redis_get('camera_notifications')
-                    motion_count = self.motion_counter >= self.min_motion_frames
+                    notify_time_check = last_notified >= self.min_notify_seconds
+                    notifications_on = utils.redis_get('camera_notifications')
+                    enough_motion = self.motion_counter >= self.min_motion_frames
 
-                    if notifications and elapsed and motion_count and occupied:
+                    if notifications_on and notify_time_check and enough_motion:
                         LOGGER.info('Sending slack alert!')
+                        last_30_pir = round(np.mean(self.pir_values[-30:]), 4)
+                        last_90_pir = round(np.mean(self.pir_values[-90:]), 4)
+                        last_300_pir = round(np.mean(self.pir_values), 4)
+                        LOGGER.debug('Last 30 PIR: %s', last_30_pir)
+                        LOGGER.debug('Last 90 PIR: %s', last_90_pir)
+                        LOGGER.debug('Last 300 PIR: %s', last_300_pir)
                         fpath = self.save_last_image(frame, timestamp, ts)
                         self.last_notified = timestamp
                         response = utils.slack_upload(
