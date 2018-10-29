@@ -1,27 +1,34 @@
+"""Periodically upload all the training data to S3
+"""
 import time
+import logging
 import os
 
-from app import utils
+import utils
+import config
 
-CURR_DIR = os.path.dirname(__file__)
-IMG_DIR = os.path.join(CURR_DIR, 'imgs')
-CONF = utils.CONF
+LOGGER = logging.getLogger('s3_upload')
+CONF = config.load_config()
 BUCKET = CONF['bucket']
-S3_IMG_PREFIX = 'images'
+
+config.init_logging()
 
 def loop():
-    """Loop through the images directory, upload images to S3, delete after
-    uploading
+    """Loop through the training data directory, upload files to S3, 
+    delete after uploading
     """
-
-    images = utils.search_path(IMG_DIR, filetypes=['.jpg'])
-    for img in images:
-        key = S3_IMG_PREFIX + img.split(IMG_DIR)[-1]
-        utils.upload_to_s3(BUCKET, img, key)
-        os.remove(img)
-    utils.clean_dir(IMG_DIR, exclude=['.gitignore'])
-    time.sleep(60*5)
-
+    while True:
+        files = utils.search_path(config.TRAIN_DIR, filetypes=['.pkl', '.txt'])
+        LOGGER.info('Uploading %s files', len(files))
+        for file in files:
+            key = os.path.basename(file)
+            try:
+                utils.upload_to_s3(BUCKET, file, key)
+                os.remove(file)
+            except:
+                LOGGER.exception("message")
+                LOGGER.error('Error while uploading file %s', file)
+        time.sleep(60*5)
 
 if __name__ == '__main__':
     loop()

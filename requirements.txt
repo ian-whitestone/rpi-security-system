@@ -9,3 +9,4 @@ slackclient
 redis
 imutils
 gunicorn
+awscli

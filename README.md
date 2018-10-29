@@ -141,6 +141,7 @@ Login with username `glances` and the password you set...
 
 ### Credentials
 
+#### Slack
 `app/config/private.yml`
 
 ```yaml
@@ -150,6 +151,92 @@ alerts_channel: XXXX # channel ID (named alerts), where messages are posted to
 rpi_cam_app:
   bot_token: xoxb-XXXXX-XXX # get this from https://api.slack.com/apps/<your_app_id>/oauth? 
   verification_token: XXXXXX # get this from app homepage: https://api.slack.com/apps/<your_app_id>
+```
+
+#### AWS
+
+I created an S3 bucket called `rpi-security-system`. I also created a new IAM user, with a limited set of permissions. I defined the user's permissions by attaching this policy to it:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "RestrictedS3Access",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::rpi-security-system",
+                "arn:aws:s3:::rpi-security-system/*"
+            ]
+        }
+    ]
+}
+```
+
+If you have installed the `awscli` package, and retrieved your IAM user's credentials from the console, you can run the following:
+
+```bash
+>>> aws configure
+AWS Access Key ID [None]: AKIAXXXX
+AWS Secret Access Key [None]: XXXXXXXXXX
+Default region name [None]:
+Default output format [None]:
+```
+
+You can inspect the AWS config files to make sure everything looks okay:
+
+```bash
+cat ~/.aws/config
+cat ~/.aws/credentials
+```
+
+You can test out access to the bucket by running the following:
+
+```bash
+>>> touch test.txt
+>>>  s3://rpi-security-system/ --sse
+upload: ./test.txt to s3://rpi-security-system/test.txt
+```
+
+**Note:** I have encryption required in my bucket policy, hence the `--sse`. This is not required.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "PutObjPolicy",
+    "Statement": [
+        {
+            "Sid": "DenyIncorrectEncryptionHeader",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::rpi-security-system/*",
+            "Condition": {
+                "StringNotEquals": {
+                    "s3:x-amz-server-side-encryption": "AES256"
+                }
+            }
+        },
+        {
+            "Sid": "DenyUnEncryptedObjectUploads",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::rpi-security-system/*",
+            "Condition": {
+                "Null": {
+                    "s3:x-amz-server-side-encryption": "true"
+                }
+            }
+        }
+    ]
+}
 ```
 
 ## Usage

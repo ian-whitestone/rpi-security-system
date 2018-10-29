@@ -43,7 +43,8 @@ loggers:
         level: DEBUG
     security_system:
         level: DEBUG
-
+    s3_upload:
+        level: DEBUG
 root:
     # specifies handlers for all loggers
     handlers: [console]
