@@ -8,6 +8,7 @@ test*.py
 bootstrap/*
 *.mov
 orig.py
+*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
