@@ -2,7 +2,7 @@
 
 # The number of seconds to wait between saving images
 # These images are returned in the /last_image slack slash command
-min_save_seconds: 60
+min_save_seconds: 600
 
 # The number of seconds to wait in between notifications on slack
 min_notify_seconds: 60
@@ -22,7 +22,7 @@ bucket: rpi-security-system # bucket to save tagged data in
 # The minimum area size of an image (in pixels) for a region to be considered
 # motion or not. Smaller values will lead to more areas marked as motion,
 # whereas higher values of min_area  will only mark larger regions as motion
-min_area: 5000
+min_area: 1000
 
 
 
