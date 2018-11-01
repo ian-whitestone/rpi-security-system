@@ -57,23 +57,12 @@ def initialize():
     LOGGER.info('Initialization complete')
     return "Initialization completed"
 
-@app.route('/hello', methods=["GET", "POST"])
-@slack_verification()
-def hello():
-    """An example slash command function.
-
-    Returns:
-        str: Response sent back to slack
-    """
-    data = utils.parse_slash_post(request.form)
-    LOGGER.info('hello slack command received with data: %s', data)
-    return 'Hello {0}'.format(data['user_name'])
 
 @app.route('/top', methods=["GET", "POST"])
 @slack_verification()
 def top():
     with open('top.log', 'w') as outfile:
-      subprocess.call("top -n1 -b -c", shell=True, stdout=outfile)
+        subprocess.call("top -n1 -b -c", shell=True, stdout=outfile)
 
     with open('top.log', 'r') as f:
         contents = "".join([next(f) for x in range(20)])
