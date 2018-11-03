@@ -135,6 +135,12 @@ Login with username `glances` and the password you set...
 
 `tail -f /tmp/glances-pi.log`
 
+**Glances in Action**
+
+You can see the power of glances in action, as a manually kill a process and restart it.
+
+<img src="glances_kill_process.gif">
+
 **References**
 - https://glances.readthedocs.io/en/stable/index.html
 - https://www.maketecheasier.com/glances-monitor-system-ubuntu/
