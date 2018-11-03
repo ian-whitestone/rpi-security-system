@@ -139,7 +139,7 @@ Login with username `glances` and the password you set...
 
 You can see the power of glances in action, as a manually kill a process and restart it.
 
-<img src="glances_kill_process.gif">
+<img src="imgs/glances_kill_process.gif">
 
 **References**
 - https://glances.readthedocs.io/en/stable/index.html
