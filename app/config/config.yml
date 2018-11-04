@@ -5,15 +5,13 @@
 min_save_seconds: 600
 
 # The number of seconds to wait in between notifications on slack
-min_notify_seconds: 60
+min_notify_seconds: 10
 
-# The fraction of frames containing motion before an image 
-# tagged as occupied will actually cause an alert
-
-# See if X% of the last 50 frames (~5 seconds) have been tagged as occupied
+# See if X% of the last 30 frames (~3 seconds) have been tagged as occupied
 # If so, and the latest image is tagged as occupied, then a notification
 # will be triggered
-min_occupied_fraction: 0.50 # at least ~2.5 seconds of motion
+motion_classification_store_cnt: 30
+min_occupied_fraction: 0.6 # at least ~2 seconds of motion
 
 # Whether you want to train the system
 # This will prompt you to tag the notifications in slack,
