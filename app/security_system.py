@@ -203,8 +203,8 @@ class SecuritySystem(MotionDetector):
         # last time image was saved
         self.last_save = datetime.now() - timedelta(minutes=10)
 
-        # record of last 50 frames and their classifications
-        self.motion_store_cnt = 50
+        # record of last X frames and their classifications
+        self.motion_store_cnt = CONF['motion_classification_store_cnt']
         self.motion_counter = []
 
         # Training settings
@@ -217,6 +217,15 @@ class SecuritySystem(MotionDetector):
         self.min_occupied_fraction = CONF['min_occupied_fraction']
 
         super(SecuritySystem, self).__init__()
+
+    def clear_stored_data(self):
+        """Clear all stored values used in classification or in backtesting
+
+        This function will be called after the camera has been turned off.
+        """
+        self.pir_values = []
+        self.frames = []
+        self.motion_counter = []
 
     def save_last_image(self, frame, timestamp, img_name, add_text=False):
         """Optinally overlay the timestamp on the latest image, then save it.
@@ -322,6 +331,8 @@ class SecuritySystem(MotionDetector):
 
 
                     if not utils.redis_get('camera_status'):
+                        LOGGER.info('Clearing stored data')
+                        self.clear_stored_data()
                         LOGGER.info('Stopping camera thread')
                         stream_iterator.close()
                         break
