@@ -7,9 +7,13 @@ min_save_seconds: 600
 # The number of seconds to wait in between notifications on slack
 min_notify_seconds: 60
 
-# The minimum number of consecutive frames containing motion before an image 
+# The fraction of frames containing motion before an image 
 # tagged as occupied will actually cause an alert
-min_motion_frames: 20 # about a second worth of motion at 10 frames per second
+
+# See if X% of the last 50 frames (~5 seconds) have been tagged as occupied
+# If so, and the latest image is tagged as occupied, then a notification
+# will be triggered
+min_occupied_fraction: 0.50 # at least ~2.5 seconds of motion
 
 # Whether you want to train the system
 # This will prompt you to tag the notifications in slack,
@@ -25,8 +29,10 @@ bucket: rpi-security-system # bucket to save tagged data in
 min_area: 5000
 
 
-
 ##### MOTION DETECTOR CLASS SETTINGS #####
+
+# Number of frames to store
+frame_store_cnt: 30
 
 # Number of PIR motion sensor values to store
 pir_store_cnt: 300

@@ -9,6 +9,7 @@ IMG_DIR = os.path.join(CURR_DIR, 'imgs')
 CONF_DIR = os.path.join(CURR_DIR, 'config')
 LOG_DIR = os.path.join(CURR_DIR, 'logs')
 TRAIN_DIR = os.path.join(CURR_DIR, 'train-data')
+MODEL_DIR = os.path.join(CURR_DIR, 'model-files')
 
 MAIN_CONF_PATH = os.path.join(CONF_DIR, 'config.yml')
 PRIVATE_CONF_PATH = os.path.join(CONF_DIR, 'private.yml')
