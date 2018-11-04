@@ -111,7 +111,7 @@ class MotionDetector():
                 frame = frame.array
 
                 # save it
-                self.store_frame(self.store_frame(frame))
+                self.store_frame(frame)
 
                 gray = self.process_frame(frame)
 
@@ -201,7 +201,7 @@ class SecuritySystem(MotionDetector):
         self.last_notified = datetime.now()
 
         # last time image was saved
-        self.last_save = datetime.now()
+        self.last_save = datetime.now() - timedelta(minutes=10)
 
         # record of last 50 frames and their classifications
         self.motion_store_cnt = 50
