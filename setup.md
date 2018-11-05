@@ -226,3 +226,15 @@ upload: ./test.txt to s3://rpi-security-system/test.txt
     ]
 }
 ```
+
+## Hardware
+
+My setup looks like this:
+
+<img src="imgs/pi_0.jpg">
+
+Note, you can mount the Pan-Tilt hat directly on the GPIO pins of your raspberry pi. However, after putting a heat sink on my pi's processor, it no longer fit, so I soldered some pins onto the hat and connected it with some female-female jumper wires.
+
+I also left 3 other cables attached to some GPIO pins so I could hook up a PIR motion sensor.
+
+<img src="imgs/pi_1.jpg">

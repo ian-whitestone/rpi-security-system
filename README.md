@@ -52,7 +52,7 @@ Next, we threshold (or binarize) the image, by converting all pixels above/below
 
 Dilation is then performed to close any gaps. Dilation involves moving a sliding window (kernel) over an image, and updating a given pixel's value based on the surrounding pixels.
 
-<img src="imgs/background_subtraction/dilation.jpg">
+<img src="imgs/background_subtraction/dilated.jpg">
 
 From this thresholded, dilated difference, you can see if the area of the white blobs is greater than a certain threshold, and trigger motion based of that.
 
