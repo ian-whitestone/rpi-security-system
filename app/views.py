@@ -118,7 +118,7 @@ def interactive():
     utils.slack_delete_file(action_value['file_id'])
     return 'Response for {} logged'.format(img_filename)
 
-@app.route('/pycam_on', methods=["GET", "POST"])
+@app.route('/pycam_on', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def pycam_on():
     """Turn on the pycam process.
@@ -133,7 +133,7 @@ def pycam_on():
         response = "Pycam has been turned on"
     return response
 
-@app.route('/pycam_off', methods=["GET", "POST"])
+@app.route('/pycam_off', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def pycam_off():
     """Turn off the pycam process.
@@ -145,7 +145,7 @@ def pycam_off():
     return "Pycam has been turned off"
 
 
-@app.route('/auto_detect_on', methods=["GET", "POST"])
+@app.route('/auto_detect_on', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def auto_detect_on():
     """Turn on the who is home auto detection process.
@@ -160,7 +160,7 @@ def auto_detect_on():
         response = "Auto detect has been turned on"
     return response
 
-@app.route('/auto_detect_off', methods=["GET", "POST"])
+@app.route('/auto_detect_off', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def auto_detect_off():
     """Turn off the who is home auto detection process.
@@ -171,7 +171,7 @@ def auto_detect_off():
     utils.redis_set('auto_detect_status', False)
     return "Auto detect has been turned off"
 
-@app.route('/notifications_off', methods=["GET", "POST"])
+@app.route('/notifications_off', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def notifications_off():
     """Disable motion detected notifications
@@ -182,7 +182,7 @@ def notifications_off():
     utils.redis_set('camera_notifications', False)
     return "Notications have been disabled"
 
-@app.route('/notifications_on', methods=["GET", "POST"])
+@app.route('/notifications_on', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def notifications_on():
     """Enable motion detected notifications
@@ -194,7 +194,7 @@ def notifications_on():
     return "Notications have been enable"
 
 
-@app.route('/rotate', methods=["GET", "POST"])
+@app.route('/rotate', methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def rotate():
     """Rotate the camera. Need to pause the camera process otherwise rotating
@@ -230,7 +230,7 @@ def rotate():
     return response
 
 
-@app.route('/current_position', methods=["GET", "POST"])
+@app.route('/current_position', methods=["POST"])
 def current_position():
     """Get the current position of the camera.
 
@@ -241,7 +241,7 @@ def current_position():
                                                  utils.get_tilt())
 
 
-@app.route("/last_image", methods=["GET", "POST"])
+@app.route("/last_image", methods=["POST"])
 @slack_verification(CONF['ian_uid'])
 def last_image():
     """Return the last image taken
