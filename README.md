@@ -2,7 +2,7 @@
 
 <img src="imgs/demo.gif">
 
-Hacking a home security system with a raspberry pi + Python.
+Building a home security system with a raspberry pi, python and slack.
 
 ## Demo
 
@@ -58,7 +58,7 @@ From this thresholded, dilated difference, you can see if the area of the white 
 
 You can see how all this is layered together in the demo below.
 
-<img src="imgs/background_substraction/background_substraction_demo.gif">
+<img src="imgs/background_substraction/background_subtraction_demo.gif">
 
 
 **Note:** This method of background substraction was entirely based off of a blog post by Adrian Rosebrock over at pyimagesearch.com. Check out the references section at the bottom for a link to his post.
@@ -132,7 +132,7 @@ When playing with my router to set up the port forwarding to my raspberry pi, I 
 
 <img src="imgs/connected_devices.png">
 
-Under the hood, the webpage for my router was making an API call to retrive this information. After digging through the network requests being made to my router with Chrome's developer tools, I was able to re-create this API call in python.
+Under the hood, the webpage for my router was making an API call to retrieve this information. After digging through the network requests being made to my router with Chrome's developer tools, I was able to re-create this API call in python.
 
 ```python
 import requests
@@ -168,12 +168,14 @@ The role of each process is as follows:
 1) The flask app handles incoming requests from slack.
     - the flask app generally communicates with the redis database to answer questions like: "Is the security system set to ON", "Are notifications turned ON", or to change any of those values
 
-2) The security system process has the code which is processing each frame from the camera, and performing background substraction. whenever motion is detected, a slack notification is triggered.
+2) The security-system process has the code which is processing each frame from the camera, and performing background substraction. Whenever motion is detected, a slack notification is triggered.
     - the security system is also constantly checking the `'camera_status'` variable in the redis database to see if it should continue running, or shutdown
-    - A shutdown can be triggered manually, by a user running `/pycam_off` in slack, or automatically by the `who_is_home` process
+    - Before sending a notification, it checks if they are enabled in the `camera_notifications` redis variable
+    - A shutdown can be triggered manually, by a user running `/pycam_off` in slack, or automatically by the `who-is-home` process
 
-3) The who_is_home process is constantly checking what devices are connected to the router, and updating the redis database accordingly.
+3) The who-is-home process is constantly checking what devices are connected to the router, and updating the redis database accordingly.
     - If no one is home, the process will update the variable in the redis database (`'camera_status'`) to ensure the security system is running. Similarly, if someone is home, the process will update the variable in order to turn the system off 
+    - The who-is-home process can be turned on/off by setting the `auto_detect_status` redis variable. If I know I am going on vacation for a few weeks, or I left my phone at home connected to the wifi, I may want to turn this off and force the security-system process to run regardless of the connected devices
 
 4) The s3_upload process runs every 5 minutes and uploads any logged training data to S3
 
@@ -181,7 +183,7 @@ The role of each process is as follows:
 
 ### System Monitoring with Glances
 
-The glances webserver provides a pretty slick system dashboard, which can be easily viewed on a desktop browser or a mobile device. As discussed in `setup.md`, I configured the `glances.conf` file to watch for a few processes.
+The glances webserver provides a pretty slick system dashboard, which can be easily viewed on a desktop browser or a mobile device. As discussed in `setup.md`, I configured the `glances.conf` file to monitor the core processes discussed above.
 
 <img src="imgs/glances.png">
 
@@ -192,6 +194,8 @@ You can see I don't have a flask process running, which is flagged in red due to
 You can see the power of glances in action, as I manually kill a process and restart it.
 
 <img src="imgs/glances_kill_process.gif">
+
+Shortly after manually killing the s3 upload process, it turns red in glances, and becomes green again after I restart it.
 
 ### Reducing False Positives with a Pre-Trained Image Classifier
 
