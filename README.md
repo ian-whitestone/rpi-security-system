@@ -24,44 +24,44 @@ When motion is detected, an alert is triggered in slack. If the system is in tra
 
 ### Motion Detection
 
-Motion detection is accomplished using a method known as background substraction. In background substraction, you store a model of the "background" (whatever your system looks like when there is no motion), and then you compare new images to this background. If there is a large enough difference, you can infer that it was caused by some type of motion. 
+Motion detection is accomplished using a method known as background subtraction. In background subtraction, you store a model of the "background" (whatever your system looks like when there is no motion), and then you compare new images to this background. If there is a large enough difference, you can infer that it was caused by some type of motion. 
 
 For simplicity, the background model is a simple running average of all frames seen by the raspberry pi. This is less computationally expensive than more advanced background modelling methods, as discussed [here](https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/).
 
 To illustrate an example of this, consider the following background model image:
 
-<img src="imgs/background_substraction/avg.jpg">
+<img src="imgs/background_subtraction/avg.jpg">
 
 **Note:** The background image is a blurred, black and white image. Blurring helps reduce noise, while working with black and white images is less computationally heavy. RGB values don't add much value in motion detection.
 
 Next, we take our latest frame,
 
-<img src="imgs/background_substraction/frame.jpg">
+<img src="imgs/background_subtraction/frame.jpg">
 
 then blur it and convert it to black and white so it can be compared to our background image.
 
-<img src="imgs/background_substraction/gray_blur.jpg">
+<img src="imgs/background_subtraction/gray_blur.jpg">
 
 Taking the difference between the two frames yields the following "delta" image:
 
-<img src="imgs/background_substraction/delta.jpg">
+<img src="imgs/background_subtraction/delta.jpg">
 
 Next, we threshold (or binarize) the image, by converting all pixels above/below a certain threshold to white or black. 
 
-<img src="imgs/background_substraction/thresholded.jpg">
+<img src="imgs/background_subtraction/thresholded.jpg">
 
 Dilation is then performed to close any gaps. Dilation involves moving a sliding window (kernel) over an image, and updating a given pixel's value based on the surrounding pixels.
 
-<img src="imgs/background_substraction/dilation.jpg">
+<img src="imgs/background_subtraction/dilation.jpg">
 
 From this thresholded, dilated difference, you can see if the area of the white blobs is greater than a certain threshold, and trigger motion based of that.
 
 You can see how all this is layered together in the demo below.
 
-<img src="imgs/background_substraction/background_subtraction_demo.gif">
+<img src="imgs/background_subtraction/background_subtraction_demo.gif">
 
 
-**Note:** This method of background substraction was entirely based off of a blog post by Adrian Rosebrock over at pyimagesearch.com. Check out the references section at the bottom for a link to his post.
+**Note:** This method of background subtraction was entirely based off of a blog post by Adrian Rosebrock over at pyimagesearch.com. Check out the references section at the bottom for a link to his post.
 
 ### Slack Interface
 Slack was used as an interface to the security system since it has a fantastic API, works excellently on mobile and desktop, and removed the need for me to make a GUI.
@@ -168,7 +168,7 @@ The role of each process is as follows:
 1) The flask app handles incoming requests from slack.
     - the flask app generally communicates with the redis database to answer questions like: "Is the security system set to ON", "Are notifications turned ON", or to change any of those values
 
-2) The security-system process has the code which is processing each frame from the camera, and performing background substraction. Whenever motion is detected, a slack notification is triggered.
+2) The security-system process has the code which is processing each frame from the camera, and performing background subtraction. Whenever motion is detected, a slack notification is triggered.
     - the security system is also constantly checking the `'camera_status'` variable in the redis database to see if it should continue running, or shutdown
     - Before sending a notification, it checks if they are enabled in the `camera_notifications` redis variable
     - A shutdown can be triggered manually, by a user running `/pycam_off` in slack, or automatically by the `who-is-home` process
