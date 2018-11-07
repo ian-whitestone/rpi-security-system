@@ -34,6 +34,9 @@ class MotionDetector():
         """
         LOGGER.debug('Initializing motion detector class')
 
+        # Store the avg in memory
+        self.avg = None 
+
         # Store last <frame_store_cnt> frames in memory
         self.frames = []
         self.frame_store_cnt = CONF['frame_store_cnt'] 
@@ -102,7 +105,7 @@ class MotionDetector():
             camera.hflip = self.hflip
             camera.resolution = tuple(self.resolution)
             camera.framerate = self.fps
-            avg = None
+            self.avg = None
 
             raw_capture = PiRGBArray(camera, size=tuple(self.resolution))
             for frame in camera.capture_continuous(raw_capture, 'bgr',
@@ -115,16 +118,16 @@ class MotionDetector():
 
                 gray = self.process_frame(frame)
 
-                if avg is None:
+                if self.avg is None:
                     LOGGER.info("Starting background model...")
-                    avg = gray.copy().astype("float")
+                    self.avg = gray.copy().astype("float")
                     raw_capture.truncate(0)
                     continue
 
                 # Update the background image
-                cv2.accumulateWeighted(gray, avg, self.alpha)
+                cv2.accumulateWeighted(gray, self.avg, self.alpha)
 
-                contours, frame_delta = self.compare_frame(gray, avg)
+                contours, frame_delta = self.compare_frame(gray, self.avg)
                 self.store_pir(self.read_pir())
                 
                 # reset stream for next frame
@@ -249,12 +252,13 @@ class SecuritySystem(MotionDetector):
         return fpath
 
     def save_pickle(
-        self, frames, frame_delta, contours, pir, ts, classification):
+        self, frames, frame_delta, avg, contours, pir, ts, classification):
         """Save data to a pickle file
 
         Args:
             frames ([numpy.ndarray]): list of frames
             frame_delta (numpy.ndarray): Thresholded, delta image
+            avg (numpy.ndarray): Background image
             contours (list): List of contours metadata
             pir (list): List of pir sensor values
             ts (str): Timestamp
@@ -265,6 +269,7 @@ class SecuritySystem(MotionDetector):
             'frame': frame,
             'frames': frames,
             'frame_delta': frame_delta,
+            'avg': avg,
             'contours': contours,
             'pir': pir,
             'classification': classification,
@@ -302,7 +307,7 @@ class SecuritySystem(MotionDetector):
                         # Save for backtesting & training
                         if not occupied and self.train:
                             self.save_pickle(
-                                self.frames, frame_delta, contours,
+                                self.frames, frame_delta, self.avg, contours,
                                 self.pir_values, ts, classification=False
                             )
 
@@ -325,7 +330,7 @@ class SecuritySystem(MotionDetector):
                         if self.train:
                             utils.slack_post_interactive(response)
                             self.save_pickle(
-                                self.frames, frame_delta, contours,
+                                self.frames, frame_delta, self.avg, contours,
                                 self.pir_values, ts, classification=True
                             )
 
