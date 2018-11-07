@@ -25,7 +25,7 @@ LOGIN_POST = ROUTER['login_post']
 GET_CONNECTED_URL = ROUTER['get_connected_url']
 BASE_HEADERS = ROUTER['headers']
 BASE_COOKIE = ROUTER['base_cookie']
-KNOWN_HOSTS = ["Ian's iPhone", 'iPhone']
+KNOWN_HOSTS = ["Ians-iPhone", 'iPhone']
 
 def get_connected_humans():
     session = requests.session()
