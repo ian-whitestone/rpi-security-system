@@ -216,7 +216,6 @@ You can see in the table below that layering the `person_last_30` indicator alon
 | motion_model | person_last_30 | actual | count |
 |--------------|----------------|--------|-------|
 | 0            | 0              | 0      | 235   |
-| 0            | 1              | 1      | 1     |
 | 1            | 0              | 0      | 6     |
 | 1            | 1              | 1      | 177   |
 
