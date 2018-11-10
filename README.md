@@ -54,7 +54,7 @@ Dilation is then performed to close any gaps. Dilation involves moving a sliding
 
 <img src="imgs/background_subtraction/dilated.jpg">
 
-From this thresholded, dilated difference, you can see if the area of the white blobs is greater than a certain threshold, and trigger motion based of that.
+From this thresholded, dilated difference, you can see if the area of the white blobs is greater than a certain threshold, and trigger motion based of that. You can also specify a minimum number of frames where is this large enough difference. See the `app/config/config.yml` file for all the settings I am using.
 
 You can see how all this is layered together in the demo below.
 
@@ -201,7 +201,36 @@ Shortly after manually killing the s3 upload process, it turns red in glances, a
 
 Things like shadows or rapid lighting changes can trigger false positives with the background subtraction method. In order to minimize these false positives, the use of a pre-trained image classifier was explored.
 
-Results coming soon...
+Following this [pyimagesearch blogpost](https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/), I was able to download a lightweight, pre-trained model from this [github repo](https://github.com/chuanqi305/MobileNet-SSD) (downloaded files are in `app/model-files' of this repo). Running the model was relatively straightforward, thanks to `cv2`'s built in functionality to read caffee models. See the aforementioned blog post for more details.
+
+You can see an example of the model predicting the probability of a person being present in the camera feed below:
+
+<img src="imgs/person_model_demo.gif">
+
+After running the security system for a couple days, I was able to collect a dataset with about ~200 tagged images. Note, I only tagged images when the background-subtraction based method detected motion (i.e. the base motion model thought there was motion detected). There were another ~200 images saved periodically with no motion detected, serving as a sample of true negatives.
+
+Along with each image, I also saved a copy of the last 30 frames (~3 seconds of footage), before the slack alerting event (see the `save_pickle` function in the `app/security-system.py` module that takes care of this). A new feature was created based on this last 30 images, `person_last_30`. If the probability of a person being present was > 0 in any of the last 30 images, `person_last_30` was set to 1.
+
+You can see in the table below that layering the `person_last_30` indicator along with the original `motion_model`, gets rid of the six false positives that were triggered due to lighting changes.
+
+| motion_model | person_last_30 | actual | count |
+|--------------|----------------|--------|-------|
+| 0            | 0              | 0      | 235   |
+| 0            | 1              | 1      | 1     |
+| 1            | 0              | 0      | 6     |
+| 1            | 1              | 1      | 177   |
+
+**Note** the `person_last_30` variable actually picked up a single case that the motion model completely missed (due to the delta image blobs not being big enough).
+
+<img src="imgs/false_negative.png">
+
+Lowering the `min_area` threshold or increasing the number of `dilate_iterations` in `app/config/config.yml` would help solve for this.
+
+
+Overall, layering a pre-trained image classifier shows promising results for improving the security system accuracy. Note, the model is far from perfect, so proceed with caution.
+
+<img src="imgs/misclassification.jpg" width="300px">
+
 
 ## Setup
 
