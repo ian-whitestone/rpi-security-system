@@ -229,7 +229,7 @@ Lowering the `min_area` threshold or increasing the number of `dilate_iterations
 
 Overall, layering a pre-trained image classifier shows promising results for improving the security system accuracy. Note, the model is far from perfect, so proceed with caution.
 
-<img src="imgs/misclassification.jpg" width="300px">
+<img src="imgs/misclassification.jpg" width="480px">
 
 
 ## Setup
