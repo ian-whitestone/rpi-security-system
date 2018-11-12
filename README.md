@@ -4,6 +4,8 @@
 
 Building a home security system with a raspberry pi, python and slack.
 
+Presented at Pycon Canada 2018, see [slides here](https://ian-whitestone.github.io/slides/pycon-canada-2018.html#/).
+
 ## Demo
 
 Slack is used as a control system, to get current information about the system, retrieve the latest image taken, or turn the system on/off.
@@ -201,7 +203,7 @@ Shortly after manually killing the s3 upload process, it turns red in glances, a
 
 Things like shadows or rapid lighting changes can trigger false positives with the background subtraction method. In order to minimize these false positives, the use of a pre-trained image classifier was explored.
 
-Following this [pyimagesearch blogpost](https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/), I was able to download a lightweight, pre-trained model from this [github repo](https://github.com/chuanqi305/MobileNet-SSD) (downloaded files are in `app/model-files' of this repo). Running the model was relatively straightforward, thanks to `cv2`'s built in functionality to read caffee models. See the aforementioned blog post for more details.
+Following this [pyimagesearch blogpost](https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/), I was able to download a lightweight, pre-trained model from this [github repo](https://github.com/chuanqi305/MobileNet-SSD) (downloaded files are in `app/model-files` of this repo). Running the model was relatively straightforward, thanks to `cv2`'s built in functionality to read caffee models. See the aforementioned blog post for more details.
 
 You can see an example of the model predicting the probability of a person being present in the camera feed below:
 
