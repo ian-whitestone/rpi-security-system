@@ -14,7 +14,7 @@ Slack is used as a control system, to get current information about the system, 
 
 Other things like disabling notifications, automatically turning the system on/off based on who is home, or panning/tilting the camera can also be controlled through slack.
 
-Moving the camera is accomplished by adding a [Pan-Tilt Hat](https://shop.pimoroni.com/products/pan-tilt-hat). With a simple slack slash command, i.e. `/rotate 30 20`, the camera can be panned to position 30 and tilted to position 20.
+Moving the camera is accomplished by adding a [Pan-Tilt Hat](https://shop.pimoroni.com/products/pan-tilt-hat). With a simple slack slash command, i.e. `/rotate 30 20`, the camera can be panned to +30 degrees and tilted to +20 degrees.
 
 <img src="imgs/rotate_demo.gif">
 
@@ -63,7 +63,7 @@ You can see how all this is layered together in the demo below.
 <img src="imgs/background_subtraction/background_subtraction_demo.gif">
 
 
-**Note:** This method of background subtraction was entirely based off of a blog post by Adrian Rosebrock over at pyimagesearch.com. Check out the references section at the bottom for a link to his post.
+**Note:** This method of background subtraction was entirely based off of a blog post by Adrian Rosebrock over at pyimagesearch.com. There are other background subtraction models built directly into OpenCV ([see here](https://docs.opencv.org/3.4/db/d5c/tutorial_py_bg_subtraction.html)), but they are more computationally expensive. Check out the references section at the bottom for a link to his post. 
 
 ### Slack Interface
 Slack was used as an interface to the security system since it has a fantastic API, works excellently on mobile and desktop, and removed the need for me to make a GUI.
