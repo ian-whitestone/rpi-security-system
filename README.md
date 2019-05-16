@@ -4,7 +4,7 @@
 
 Building a home security system with a raspberry pi, python and slack.
 
-Presented at Pycon Canada 2018, see [slides here](https://ian-whitestone.github.io/slides/pycon-canada-2018.html#/).
+Presented at Pycon Canada 2018, see [slides here](https://ian-whitestone.github.io/slides/pycon-canada-2018.html#/) or watch the [presentation here](https://www.youtube.com/watch?v=hvV6EKfThL8&t=4s).
 
 ## Demo
 
